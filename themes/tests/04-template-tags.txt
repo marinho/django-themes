@@ -20,9 +20,9 @@ Template tag 'theme_static_file_url'
 Template filter 'for_theme'
 ---------------------------
 
-    >>> tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "logo.png"|for_theme:"another-theme" %}"/>'
-    >>> tpl.save()
+    >>> #tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "another-theme:logo.png" %}"/>'
+    >>> #tpl.save()
 
-    >>> print render_to_string('default:contact')
-    <img src="http://static.alatazan.com/media2/img/logo-84.png"/>
+    >>> #print render_to_string('default:contact')
+    #<img src="http://static.alatazan.com/media2/img/logo-84.png"/>
 

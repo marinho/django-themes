@@ -1,7 +1,7 @@
 from django.conf import settings
 
 # It could be 'jinja2.Template' or any other
-DEFAULT_ENGINE = getattr(settings, 'THEMES_DEFAULT_ENGINE', 'django.template.base.Template')
+DEFAULT_ENGINE = getattr(settings, 'THEMES_DEFAULT_ENGINE', 'themes.engines.DjangoTemplate')
 
 BASE_TEMPLATE = getattr(settings, 'THEMES_BASE_TEMPLATE', 'base_themes.html')
 AVAILABLE_LOADS = getattr(settings, 'THEMES_AVAILABLE_LOADS', '*') # or a tuple
