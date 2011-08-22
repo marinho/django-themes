@@ -45,6 +45,9 @@ class ThemeStaticFile(models.Model):
     def __unicode__(self):
         return self.name
 
+    def get_url(self):
+        return self.url if self.url else self.file.url
+
 # SIGNALS
 from django.db.models import signals
 
