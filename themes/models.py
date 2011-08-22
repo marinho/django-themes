@@ -3,9 +3,15 @@ from django.core.cache import cache
 
 from registration import _registered_templates
 
+class ThemeManager(models.Manager):
+    def get_current(self):
+        return self.get(is_default=True) # FIXME
+
 class Theme(models.Model):
     class Meta:
         ordering = ('verbose_name','name',)
+
+    objects = _default_manager = ThemeManager()
 
     name = models.CharField(max_length=50, unique=True)
     verbose_name = models.CharField(max_length=50, blank=True)

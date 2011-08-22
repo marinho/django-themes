@@ -12,25 +12,29 @@ class Loader(BaseLoader):
     is_usable = True
 
     def load_template_source(self, template_name, template_dirs=None):
+        if ':' in template_name:
+            active_theme, template_name = template_name.split(':', 1)
+        else:
+            active_theme = cache.get('themes:active', None)
+            if not active_theme:
+                try:
+                    theme = Theme.objects.get(is_default=True)
+                    cache.set('themes:active', theme.name, app_settings.CACHE_EXPIRATION)
+                    active_theme = theme.name
+                except Theme.DoesNotExist:
+                    raise TemplateDoesNotExist('There\'s no active theme.')
+
         try:
             reg_template = _registered_templates[template_name]
         except KeyError:
             raise TemplateDoesNotExist('Template "%s" is not registered.'%template_name)
-
-        active_theme = cache.get('themes:active', None)
-        if not active_theme:
-            try:
-                theme = Theme.objects.get(is_default=True)
-                cache.set('themes:active', theme.name, app_settings.CACHE_EXPIRATION)
-            except Theme.DoesNotExist:
-                raise TemplateDoesNotExist('There\'s no active theme.')
 
         try:
             # Using cache to restore/store template content
             cache_key = 'themes:%s|%s'%(active_theme, template_name)
             content = cache.get(cache_key, None, app_settings.CACHE_EXPIRATION)
             if not content:
-                tpl = ThemeTemplate.objects.get(theme__is_default=True, name=template_name)
+                tpl = ThemeTemplate.objects.get(theme__name=active_theme, name=template_name)
                 content = tpl.content
                 cache.set(cache_key, content)
 

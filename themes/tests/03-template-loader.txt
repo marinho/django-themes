@@ -43,4 +43,8 @@ Renders again to check it in cache
     >>> print cache.get('themes:another-theme|about')
     We are a big company named "{{ company_name }}" working for you
 
+Theme name can be set as a prefix in the template name, followed by a ":" sign
+
+    >>> print render_to_string('default:about')
+    THis is about us
 

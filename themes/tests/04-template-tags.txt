@@ -1,0 +1,28 @@
+TEMPLATE TAGS
+=============
+
+    >>> from django.template.loader import render_to_string
+    >>> from themes.models import ThemeTemplate
+
+Template tag 'theme_static_file_url'
+------------------------------------
+
+    >>> print render_to_string('default:contact')
+    Contact us by e-mail.
+
+    >>> tpl = ThemeTemplate.objects.get(theme__name='default', name='contact')
+    >>> tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "default:logo.png" %}"/>'
+    >>> tpl.save()
+
+    >>> print render_to_string('default:contact')
+    <img src="http://static.alatazan.com/media2/img/logo-84.png"/>
+
+Template filter 'for_theme'
+---------------------------
+
+    >>> tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "logo.png"|for_theme:"another-theme" %}"/>'
+    >>> tpl.save()
+
+    >>> print render_to_string('default:contact')
+    <img src="http://static.alatazan.com/media2/img/logo-84.png"/>
+

@@ -111,3 +111,15 @@ ThemeStaticFile
     >>> model_has_fields(ThemeStaticFile, ['theme','name','url','file'])
     []
 
+    >>> st1 = ThemeStaticFile()
+    >>> st1.theme = theme1
+    >>> st1.name = 'logo.png'
+    >>> st1.url = 'http://static.alatazan.com/media2/img/logo-84.png'
+    >>> st1.save()
+
+    >>> st2 = ThemeStaticFile()
+    >>> st2.theme = theme2
+    >>> st2.name = 'logo.png'
+    >>> st2.url = 'http://media.djangobrasil.org/djangobrasil/images/djangobrasil.png'
+    >>> st2.save()
+
