@@ -1,0 +1,113 @@
+MODELS
+=====-
+
+The models are structured on 3 model classes:
+
+                    ---------
+                    | Theme |
+                    ---------
+                      ^   ^
+                     1|   |1
+            -----------   ------------
+           *|                        |*
+    -----------------       -------------------
+    | ThemeTemplate |       | ThemeStaticFile |
+    -----------------       -------------------
+
+    >>> from djangoplus.test_utils import assert_equal, model_has_fields
+
+Theme
+-----
+
+A theme is a set of templates and static files for a defined design style. In CMS systems,
+themes usually have names like "White Ivory", "Forest Green", "Matrix", "Technology",
+"Modern", etc. But they are more useful for project supporting many different layouts.
+
+For example: a website with many blogs, each one with a different layout. So, any "layout"
+should b a theme. Or a project with multiple sites could vary their themes as well.
+
+    >>> from themes.models import Theme
+    >>> model_has_fields(Theme, ['name','verbose_name','is_default'])
+    []
+
+    >>> theme1 = Theme()
+    >>> theme1.name = 'default'
+    >>> theme1.verbose_name = 'Default'
+    >>> theme1.save()
+
+    >>> print theme1
+    Default
+
+    >>> theme1.is_default
+    False
+
+Only one theme can be default at once. If you set another theme as default, the old one
+must change to be 'not' default.
+
+    >>> theme1.is_default = True
+    >>> theme1.save()
+
+    >>> theme2 = Theme()
+    >>> theme2.name = 'another-theme'
+    >>> theme2.verbose_name = 'AnotherTheme'
+    >>> theme2.is_default = True
+    >>> theme2.save()
+
+    >>> theme1 = Theme.objects.get(pk=theme1.pk)
+
+    >>> theme1.is_default
+    False
+
+ThemeTemplate
+-------------
+
+Function to create registered templates for a given Theme
+
+    >>> theme1.create_templates()
+
+    >>> theme1.templates.values_list('name', flat=True)
+    [u'about', u'address', u'contact']
+
+Theme template fields
+
+    >>> from themes.models import ThemeTemplate
+    >>> model_has_fields(ThemeTemplate, ['theme','name','notes','content'])
+    []
+
+Changing the created ones for theme 1
+
+    >>> tpl_about_1 = theme1.templates.get(name='about')
+    >>> tpl_about_1.content = 'THis is about us'
+    >>> tpl_about_1.save()
+
+    >>> tpl_address_1 = theme1.templates.get(name='address')
+    >>> tpl_address_1.content = 'Our address is: 290 Broomhouse Ln'
+    >>> tpl_address_1.save()
+
+    >>> tpl_contact_1 = theme1.templates.get(name='contact')
+    >>> tpl_contact_1.content = 'Contact us by e-mail.'
+    >>> tpl_contact_1.save()
+
+Changing the created ones for theme 2
+
+    >>> theme2.create_templates()
+
+    >>> tpl_about_2 = theme2.templates.get(name='about')
+    >>> tpl_about_2.content = 'We are a big company named "{{ company_name }}" working for you'
+    >>> tpl_about_2.save()
+
+    >>> tpl_address_2 = theme2.templates.get(name='address')
+    >>> tpl_address_2.content = 'Our store 1 is in the Downtow Shopping Centre'
+    >>> tpl_address_2.save()
+
+    >>> tpl_contact_2 = theme2.templates.get(name='contact')
+    >>> tpl_contact_2.content = 'Contact us by phone.'
+    >>> tpl_contact_2.save()
+
+ThemeStaticFile
+---------------
+
+    >>> from themes.models import ThemeStaticFile
+    >>> model_has_fields(ThemeStaticFile, ['theme','name','url','file'])
+    []
+

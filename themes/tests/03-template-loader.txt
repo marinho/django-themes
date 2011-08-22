@@ -1,0 +1,46 @@
+TEMPLATE LOADER
+===============
+
+The theme template loader is responsible to come before the defautl loaders to recognize
+existing templates in the current project (and its applications) and load them for the active
+theme (or the mirrored respective ones).
+
+    >>> from djangoplus.test_utils import assert_equal
+
+    >>> from django.template.loader import get_template
+    >>> about_tpl = get_template('about')
+    >>> assert_equal(about_tpl.name, 'about')
+
+    >>> from django.template.loader import render_to_string
+    >>> print render_to_string('about', {'company_name': 'Mochii Ltd.'})
+    We are a big company named "Mochii Ltd." working for you
+
+Templates in cache
+------------------
+
+    >>> from django.core.cache import cache
+
+Existing in cache
+
+    >>> print cache.get('themes:another-theme|about')
+    We are a big company named "{{ company_name }}" working for you
+
+Forces cache invalidate
+
+    >>> from themes.models import ThemeTemplate
+    >>> model_tpl = ThemeTemplate.objects.get(theme__is_default=True, name='about')
+    >>> model_tpl.save()
+
+Check empty cache
+
+    >>> assert_equal(cache.get('themes:another-theme|about'), None)
+
+Renders again to check it in cache
+
+    >>> print render_to_string('about', {'company_name': 'Mochii Ltd.'})
+    We are a big company named "Mochii Ltd." working for you
+
+    >>> print cache.get('themes:another-theme|about')
+    We are a big company named "{{ company_name }}" working for you
+
+

@@ -1,0 +1,68 @@
+BASIC
+=====
+
+The most basic thing is that a project must register the templates it uses. This is
+important for security and for a reliable usage of them, because, templates can be
+generated and the user is able to know which templates he/she must creates and which
+variables are available for each one of them. This ensures as well that the template
+loader will load only the theme templates for registered templates, so, it's safer.
+
+The internal variable to store registered templates is this:
+
+    >>> from djangoplus.test_utils import assert_equal
+
+    >>> from themes import _registered_templates
+    >>> _registered_templates
+    {}
+
+But this is not useful for the developer. He/she must know the function to register them:
+
+    >>> from themes import register_template
+
+When your project or application registers a template, it just means it needs that
+template for something, and it sets everything that template "offers" for theme templates
+to be able to use. The "implemented" template is the "Theme Template", used to fill this
+registered template for the active theme.
+
+The most simple template registration is this:
+
+    >>> register_template('contact')
+    >>> _registered_templates['contact']
+    {'name': 'contact'}
+
+That means it just uses the project's default settings and isn't mirroring any "physical"
+template.
+
+A template mirroring a physical template means that physical one will assume while that
+template has not a theme template to assume.
+
+    >>> register_template('about', mirroring='about.html', available_vars=('company_name',))
+    >>> _registered_templates['about']
+    {'available_vars': ('company_name',), 'name': 'about', 'mirroring': 'about.html'}
+
+A full example of template registration
+
+    >>> register_template(
+    ...     name='address',
+    ...     verbose_name='Address Page',
+    ...     engine='jinja2.Template',
+    ...     default_base_template='public/base.html',
+    ...     mirroring='public/address.html',
+    ...     available_blocks=('extra_head', 'title', 'content', 'body_scripts'),
+    ...     available_vars=('form_contact', 'user', 'messages', 'STATIC_URL'),
+    ...     available_loads=('i18n', 'comments'),
+    ...     available_tags=('for', 'if', 'with', 'include', 'extends'),
+    ...     available_filters='*',
+    ...     available_includes=('user-box', 'messages-box'),
+    ...     excluded_vars=('request', 'perms'),
+    ... )
+    >>> assert_equal(_registered_templates['address'], {'engine': 'jinja2.Template',
+    ...     'available_vars': ('form_contact', 'user', 'messages', 'STATIC_URL'),
+    ...     'available_filters': '*', 'name': 'address',
+    ...     'available_blocks': ('extra_head', 'title', 'content', 'body_scripts'),
+    ...     'available_includes': ('user-box', 'messages-box'), 'available_loads': ('i18n', 'comments'),
+    ...     'mirroring': 'public/address.html', 'default_base_template': 'public/base.html',
+    ...     'available_tags': ('for', 'if', 'with', 'include', 'extends'),
+    ...     'excluded_vars': ('request', 'perms'), 'verbose_name': 'Address Page'})
+
+
