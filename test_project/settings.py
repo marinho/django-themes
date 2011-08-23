@@ -102,6 +102,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'themes.middleware.ThemeMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -149,4 +150,6 @@ LOGGING = {
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--with-coverage', '--with-doctest', '--doctest-tests', '--doctest-extension=txt']
+
+THEMES_CHOOSING_FUNCTION = 'views.choose_theme'
 

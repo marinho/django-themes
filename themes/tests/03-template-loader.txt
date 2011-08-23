@@ -23,7 +23,7 @@ Templates in cache
 Existing in cache
 
     >>> print cache.get('themes:another-theme|about')
-    We are a big company named "{{ company_name }}" working for you
+    engine:;We are a big company named "{{ company_name }}" working for you
 
 Forces cache invalidate
 
@@ -41,7 +41,7 @@ Renders again to check it in cache
     We are a big company named "Mochii Ltd." working for you
 
     >>> print cache.get('themes:another-theme|about')
-    We are a big company named "{{ company_name }}" working for you
+    engine:;We are a big company named "{{ company_name }}" working for you
 
 Theme name can be set as a prefix in the template name, followed by a ":" sign
 

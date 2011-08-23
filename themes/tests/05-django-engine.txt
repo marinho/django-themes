@@ -1,0 +1,39 @@
+DJANGO TEMPLATE RENDERER
+========================
+
+This app is able to work with different template engines at once. For that, it's necessary
+just to inform the engine class for that.
+
+Because we have to treat and prepare things before to render, the template class must be
+ours, but it just will encapsulate the original one, controlling which variables are going
+to the context.
+
+Default engine comes from app_settings.DEFAULT_ENGINE (settings.THEMES_DEFAULT_ENGINE)
+
+    >>> from themes.models import ThemeTemplate
+    >>> from themes.app_settings import DEFAULT_ENGINE
+
+    >>> print DEFAULT_ENGINE
+    themes.engines.DjangoTemplate
+
+    >>> from django.template.loader import render_to_string
+
+    >>> print render_to_string('default:address')
+    Our address is: 290 Broomhouse Ln
+
+    >>> tpl1 = ThemeTemplate.objects.get(theme__name='default', name='address')
+    >>> tpl1.content = """{% extends "default:base" %}
+    ... {% block content %}{{ block.super }}Just testing{% endblock %}"""
+    >>> tpl1.save()
+
+    >>> base_tpl = ThemeTemplate()
+    >>> base_tpl.theme = tpl1.theme
+    >>> base_tpl.name = 'base'
+    >>> base_tpl.content = """Title here.
+    ... {% block content %}Comes before {% endblock %}"""
+    >>> base_tpl.save()
+
+    >>> print render_to_string('default:address')
+    Title here.
+    Comes before Just testing
+    

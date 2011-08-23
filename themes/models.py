@@ -34,6 +34,7 @@ class ThemeTemplate(models.Model):
     name = models.CharField(max_length=200)
     notes = models.TextField(blank=True)
     content = models.TextField(blank=True)
+    engine = models.CharField(max_length=50, blank=True, help_text='A class path string, like "themes.engines.DjangoTemplate" or "themes.engines.Jinja2Template". If empty, setting THEMES_DEFAULT_ENGINE assumes.')
 
     def __unicode__(self):
         return self.name

@@ -1,0 +1,18 @@
+MIDDLEWARE
+==========
+
+That's a middleware to choose the current theme and set it to the current request.
+
+For that, it uses a function set in settings, so the developer can set it as he/she wants,
+based on criteria he/she needs.
+
+    >>> from django.test.client import Client
+    >>> cl = Client()
+
+    >>> from themes.models import ThemeTemplate, Theme
+
+    >>> theme = Theme.objects.get(is_default=True)
+    >>> home = theme.templates.create(name='home', content='Just testing this home page.')
+
+    >>> resp = cl.get('/')
+

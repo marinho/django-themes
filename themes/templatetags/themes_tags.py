@@ -16,6 +16,8 @@ class ThemeStaticFileURL(template.Node):
         if ':' in name:
             theme, name  = name.split(':', 1)
             theme = Theme.objects.get(name=theme)
+        elif 'request' in context and getattr(context['request'], 'theme', None):
+            theme = context['request'].theme
         else:
             theme = Theme.objects.get_current()
 
@@ -33,9 +35,4 @@ def do_theme_static_file_url(parser, token):
     bits = token.split_contents()
     return ThemeStaticFileURL(bits[1])
 register.tag('theme_static_file_url', do_theme_static_file_url)
-
-@register.filter
-def for_theme(path, theme):
-    theme_name = theme if isinstance(theme, basestring) else theme.name
-    return '%s:%s'%(theme_name, path)
 

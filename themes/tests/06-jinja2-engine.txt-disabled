@@ -1,0 +1,24 @@
+JINJA2 TEMPLATE RENDERER
+========================
+
+Jinja2 is a similar template renderer compatible with Django, with similar syntax, but hugely
+faster. So, it's a better idea when the developer wants a faster application, using less
+resources.
+
+    >>> from django.template.loader import render_to_string
+    >>> from themes.models import ThemeTemplate
+
+    >>> tpl1 = ThemeTemplate.objects.get(theme__name='default', name='address')
+    >>> tpl1.engine = 'themes.engines.Jinja2Template'
+    >>> tpl1.content = """{% extends "default:base" %}
+    ... {% block content %}{{ super() }}Just testing{% endblock %}"""
+    >>> tpl1.save()
+
+    >>> base_tpl = ThemeTemplate.objects.get(theme__name='default', name='base')
+    >>> base_tpl.engine = 'themes.engines.Jinja2Template'
+    >>> base_tpl.save()
+
+    >>> print render_to_string('default:address')
+    Title here.
+    Comes before Just testing
+

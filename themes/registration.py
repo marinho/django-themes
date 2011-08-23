@@ -12,7 +12,6 @@ def register_template(name, **kwargs):
     The recognized named arguments are:
 
         - verbose_name          - Default: assumes the name
-        - engine                - Default: assumes app_settings.DEFAULT_ENGINE
         - default_base_template - Default: assumes app_settings.BASE_TEMPLATE
         - mirroring             - Default: assumes empty
         - available_blocks      - Default: assumes empty

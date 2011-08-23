@@ -28,35 +28,43 @@ class Loader(BaseLoader):
         try:
             reg_template = _registered_templates[template_name]
         except KeyError:
-            raise TemplateDoesNotExist('Template "%s" is not registered.'%template_name)
+            reg_template = {}
+            #raise TemplateDoesNotExist('Template "%s" is not registered.'%template_name)
 
-        source, display_name = self.load_template_source(active_theme, template_name)
-        origin = make_origin(display_name, self.load_template_source, template_name, template_dirs)
-
-        try:
-            template_class = get_engine_class(reg_template.get('engine', None) or app_settings.DEFAULT_ENGINE)
-            template = template_class(source, origin, template_name)
-            return template, None
-        except TemplateDoesNotExist:
-            return source, display_name        
-
-    def load_template_source(self, active_theme, template_name):
+        content = None
+        origin = None
+        engine = None
         try:
             # Using cache to restore/store template content
             cache_key = 'themes:%s|%s'%(active_theme, template_name)
-            content = cache.get(cache_key, None, app_settings.CACHE_EXPIRATION)
+            content = cache.get(cache_key, None)
+
             if not content:
                 tpl = ThemeTemplate.objects.get(theme__name=active_theme, name=template_name)
+                engine = tpl.engine
                 content = tpl.content
-                cache.set(cache_key, content)
+                cache.set(cache_key, 'engine:%s;%s'%(engine,content), app_settings.CACHE_EXPIRATION)
 
-            return (tpl.content, '%s/%s'%(tpl.theme.name, tpl.name))
+            origin = '%s:%s'%(active_theme, template_name)
         except ThemeTemplate.DoesNotExist:
-            if reg_template.get('mirroring', None):
-                return get_template(reg_template['mirroring'])
+            if reg_template and reg_template.get('mirroring', None):
+                content, origin = get_template(reg_template['mirroring'])
 
-        raise TemplateDoesNotExist('Template "%s" doesn\'t exist in active theme.'%template_name)
-    load_template_source.is_usable = True
+        if content is None:
+            raise TemplateDoesNotExist('Template "%s" doesn\'t exist in active theme.'%template_name)
+
+        if content.startswith('engine:'):
+            engine, content = content.split(';', 1)
+            engine = engine.split(':')[1]
+
+        try:
+            template_class = get_engine_class(engine or app_settings.DEFAULT_ENGINE)
+            template = template_class(content, origin, template_name)
+
+            return template, None
+        except TemplateDoesNotExist:
+            return content, origin
+
 
 def get_engine_class(path):
     if isinstance(path, basestring):

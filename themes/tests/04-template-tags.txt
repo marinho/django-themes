@@ -17,12 +17,3 @@ Template tag 'theme_static_file_url'
     >>> print render_to_string('default:contact')
     <img src="http://static.alatazan.com/media2/img/logo-84.png"/>
 
-Template filter 'for_theme'
----------------------------
-
-    >>> #tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "another-theme:logo.png" %}"/>'
-    >>> #tpl.save()
-
-    >>> #print render_to_string('default:contact')
-    #<img src="http://static.alatazan.com/media2/img/logo-84.png"/>
-
