@@ -4,14 +4,14 @@ TEMPLATE TAGS
     >>> from django.template.loader import render_to_string
     >>> from themes.models import ThemeTemplate
 
-Template tag 'theme_static_file_url'
+Template tag 'theme_static_file'
 ------------------------------------
 
     >>> print render_to_string('default:contact')
     Contact us by e-mail.
 
     >>> tpl = ThemeTemplate.objects.get(theme__name='default', name='contact')
-    >>> tpl.content = '{% load themes_tags %}<img src="{% theme_static_file_url "default:logo.png" %}"/>'
+    >>> tpl.content = '{% load themes_tags %}<img src="{% theme_static_file "default:logo.png" %}"/>'
     >>> tpl.save()
 
     >>> print render_to_string('default:contact')
