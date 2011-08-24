@@ -54,16 +54,27 @@ def theme_edit_child(request, name):
     theme = get_object_or_404(Theme, name=name)
 
     if request.method == 'POST':
-        pass
+        if request.POST['type'] == 'template':
+            item = theme.templates.get(name=request.POST['name'])
+            item.content = request.POST['content']
+            item.save()
+            return HttpResponse('ok')
+        elif request.POST['type'] == 'static-file':
+            item = theme.static_files.get(name=request.POST['name'])
+            file_path = item.file.path
+            fp = file(file_path, 'w')
+            fp.write(request.POST['content'].encode('utf-8'))
+            fp.close()
+            return HttpResponse('ok')
     else:
         rel = request.GET['rel']
         typ, pk = rel.rsplit('-',1)
 
         if typ == 'template':
             item = theme.templates.get(pk=pk)
-            return HttpResponse('type(html)'+item.content)
+            return HttpResponse(u'type(html)'+item.content)
         elif typ == 'static-file':
             item = theme.static_files.get(pk=pk)
             ext = os.path.splitext(item.file.name)[-1][1:]
-            return HttpResponse('type(%s)'%(ext, item.file.read()))
+            return HttpResponse(u'type(%s)%s'%(ext, item.file.read().decode('utf-8')))
 

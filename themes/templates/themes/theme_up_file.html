@@ -1,14 +1,31 @@
 <!doctype html>
 <html>
     <head>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
         <style>
-            body {font-family:arial,helvetica; margin:0; padding:0;}
+            body {font-family:arial,helvetica; margin:0; padding:5px;}
+            .dropping {background:#227; color:white; font-weight:bold;}
             #file-up {display:none; position:absolute; top:0; left:0; right:0; bottom:0; opacity:0;}
         </style>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <script>
+            var file_up_entered = 0;
+
+            function body_dragenter() {
+                file_up_entered++;
+                $('body').addClass('dropping');
+                $('#file-up').show();
+            }
+
+            function body_dragleave() {
+                file_up_entered--;
+                //$('body').removeClass('dropping');
+                if (!file_up_entered) $('#file-up').hide()
+            }
+        </script>
     </head>
 
-    <body ondragenter="file_up_entered++; $('#file-up').show()" ondragleave="file_up_entered--;if (!file_up_entered) #('#file-up').hide()">
+    <body ondragenter="body_dragenter()" ondragleave="body_dragleave()">
         <form method="post" enctype="multipart/form-data" id="form-upload-static">
             <input type="file" id="file-up" name="dragupload[]"/>
             Drop files here
@@ -19,7 +36,6 @@
             parent.add_static_file_to_list('{{ st.pk }}', '{{ st.name }}', '{{ st.file.url }}');
             {% endfor %}
 
-            var file_up_entered = 0;
             $(document).ready(function(){
                 $('#file-up').change(function(){
                     if ($(this).val()) {

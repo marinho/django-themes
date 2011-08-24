@@ -6,19 +6,25 @@
 
 {% block extra_head %}
 <style>
-    body {font-family:arial,helvetica;}
+    body {font-family:arial,helvetica; margin:0;}
+    h1 {font-size:1.2em; padding:5px; background:#def; margin:0; height:25px;}
+    h2 {font-size:1.1em; padding:5px; background:#ddf7ff; margin:0;}
     iframe#up-file { height:30px; margin:0; padding:0; border:0; }
-    #middle {position:relative; height: 500px;}
-    #sidebar {width:200px;}
-    #editor {position:absolute; top:0; right:0; bottom:0; left:200px;}
+    #sidebar {width:300px;}
+    ul#templates, ul#static-files {margin:5px; padding:0;}
+    ul#templates li, ul#static-files li {list-style:none;}
+    #editor {position:absolute; top:35px; right:0; bottom:0; left:300px;}
+    #current {position:absolute; top:0; right:0; height:35px; left:300px; overflow:hidden;}
+    #current #item-type, #current #item-name {margin:5px; float:left;}
+    #current #save {float:right; margin:5px;}
 </style>
 {% endblock extra_head %}
 
 {% block content %}
-<h1>Theme: {{ theme }}</h1>
-
 <div id="middle">
     <div id="sidebar">
+        <h1>Theme: {{ theme }}</h1>
+
         <h2>{% trans "Templates" %}</h2>
         <ul id="templates">
             {% for template in theme.templates.all %}
@@ -35,31 +41,75 @@
         </ul>
     </div>
 
+    <div id="current">
+        <span id="item-type"></span>
+        <span id="item-name">no file editing</span>
+        <input type="button" value="{% trans "Save" %}" id="save"/>
+    </div>
+
     <div id="editor"></div>
 </div>
 {% endblock content %}
 
 {% block body_scripts %}{{ block.super }}
 <script src="{{ STATIC_URL }}ace/ace.js" charset="utf-8"></script>
+<script src="{{ STATIC_URL }}ace/mode-html.js" charset="utf-8"></script>
+<script src="{{ STATIC_URL }}ace/mode-javascript.js" charset="utf-8"></script>
+<script src="{{ STATIC_URL }}ace/mode-css.js" charset="utf-8"></script>
 <script>
     function add_static_file_to_list(pk, name, url) {
         $('<li><a href="javascript:void(0)" class="edit" rel="static-file-'+pk+'">'+name+'</a></li>')
             .appendTo('#static-files');
     }
 
+    var HtmlMode = require("ace/mode/html").Mode;
+    var JavaScriptMode = require("ace/mode/javascript").Mode;
+    var CssMode = require("ace/mode/css").Mode;
+    var TextMode = require("ace/mode/text").Mode;
+
     $(document).ready(function(){
         var editor = ace.edit("editor");
 
         $('.edit').click(function(){
-            var url = '{% url themes_edit_child theme.name %}?rel='+$(this).attr('rel');
+            var edit = $(this);
+            var url = '{% url themes_edit_child theme.name %}?rel='+edit.attr('rel');
             $.get(url, function(resp) {
-                $('#editor').text(resp);
-                var editor = ace.edit("editor");
+                if (edit.attr('rel').indexOf('template') == 0) {
+                    $('#item-type').text('template: ');
+                } else {
+                    $('#item-type').text('static file: ');
+                }
+                $('#item-name').text(edit.text());
 
-                var HtmlMode = require("ace/mode/html").Mode;
-                var JavaScriptMode = require("ace/mode/javascript").Mode;
+                var pos = resp.indexOf(')');
+                var type = resp.substring(5,pos);
+                $('#editor').text(resp.substring(pos+1, resp.length));
+                editor = ace.edit("editor");
 
-                //editor.getSession().setMode(new HtmlMode());
+                if (type == 'html') {
+                    editor.getSession().setMode(new HtmlMode());
+                } else if (type == 'js') {
+                    editor.getSession().setMode(new JavaScriptMode());
+                } else if (type == 'css') {
+                    editor.getSession().setMode(new CssMode());
+                } else {
+                    editor.getSession().setMode(new TextMode());
+                }
+            });
+        });
+
+        $('#save').click(function(){
+            var item_name = $('#item-name').text();
+            var item_type = $('#item-type').text().split(':')[0].replace(' ','-');
+            var url = '{% url themes_edit_child theme.name %}';
+            var params = {
+                name: item_name,
+                type: item_type,
+                content: editor.getSession().getValue()
+            }
+
+            $.post(url, params, function(resp){
+                alert('saved ok');
             });
         });
     });
