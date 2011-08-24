@@ -1,8 +1,12 @@
+import re
+
 from django.template import get_library, import_library, InvalidTemplateLibrary, Template
 from django.template.context import RequestContext
 
 from registration import _registered_templates
 import app_settings
+
+EXP_TAGS = re.compile('({%[ ]+(extends|include|theme_static_file)[ ]+"(.+?)"[ ]+%})')
 
 class DjangoTemplate(Template):
     registered_template = None
@@ -12,7 +16,10 @@ class DjangoTemplate(Template):
         self.registered_template = _registered_templates.get(name, {})
 
         # Treat the values for tags 'extends', 'include' and 'theme_static_file'.
-        # TODO
+        for full, tag, value in EXP_TAGS.findall(template_string):
+            if ':' not in value:
+                new_value = full.replace('"'+value+'"', '"%s:%s"'%(self.theme_name, value))
+                template_string = template_string.replace(full, new_value)
 
         super(DjangoTemplate, self).__init__(template_string, origin, name)
 
