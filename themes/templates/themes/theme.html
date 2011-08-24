@@ -4,7 +4,12 @@
 
 {% block title %}Home{% endblock %}
 
-{% block extra_head %}{% endblock %}
+{% block extra_head %}
+<style>
+    body {font-family:arial,helvetica;}
+    iframe#up-file { height:30px; margin:0; padding:0; border:0; }
+</style>
+{% endblock extra_head %}
 
 {% block content %}
 <h1>Theme: {{ theme }}</h1>
@@ -19,6 +24,7 @@
         </ul>
 
         <h2>{% trans "Static Files" %}</h2>
+        <iframe src="{% url themes_up_file theme.name %}" id="up-file" scrolling="no"></iframe>
         <ul id="static-files">
             {% for static_file in theme.static_files.all %}
             <li><a href="#">{{ static_file }}</a></li>
@@ -31,5 +37,12 @@
 </div>
 {% endblock content %}
 
-{% block body_scripts %}{% endblock %}
+{% block body_scripts %}{{ block.super }}
+<script>
+    function add_static_file_to_list(pk, name, url) {
+        $('<li><a href="#">'+name+'</a></li>').data('details', {'pk':pk, 'url':url})
+            .appendTo('#static-files');
+    }
+</script>
+{% endblock body_scripts %}
 

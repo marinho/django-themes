@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <style>
+            body {font-family:arial,helvetica; margin:0; padding:0;}
+            #file-up {display:none; position:absolute; top:0; left:0; right:0; bottom:0; opacity:0;}
+        </style>
+    </head>
+
+    <body ondragenter="file_up_entered++; $('#file-up').show()" ondragleave="file_up_entered--;if (!file_up_entered) #('#file-up').hide()">
+        <form method="post" enctype="multipart/form-data" id="form-upload-static">
+            <input type="file" id="file-up" name="dragupload[]"/>
+            Drop files here
+        </form>
+
+        <script>
+            {% for st in new_static_files %}
+            parent.add_static_file_to_list('{{ st.pk }}', '{{ st.name }}', '{{ st.file.url }}');
+            {% endfor %}
+
+            var file_up_entered = 0;
+            $(document).ready(function(){
+                $('#file-up').change(function(){
+                    if ($(this).val()) {
+                        $(this).parents('form').submit();
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
