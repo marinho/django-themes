@@ -3,7 +3,8 @@ from django.contrib import admin
 from models import Theme, ThemeTemplate, ThemeStaticFile
 
 class AdminTheme(admin.ModelAdmin):
-    pass
+    list_filters = ('is_default',)
+    list_display = ('name','verbose_name','is_default',)
 admin.site.register(Theme, AdminTheme)
 
 class AdminThemeTemplate(admin.ModelAdmin):

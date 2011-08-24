@@ -1,0 +1,27 @@
+{% extends "themes/base.html" %}
+
+{% load i18n %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+<h1>Themes</h1>
+
+<div id="middle">
+    <div id="sidebar">
+        <ul id="themes">
+            {% for theme in themes %}
+            <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="container">
+    </div>
+</div>
+{% endblock content %}
+
+{% block body_scripts %}{% endblock %}
+

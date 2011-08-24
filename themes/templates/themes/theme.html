@@ -1,0 +1,35 @@
+{% extends "themes/base.html" %}
+
+{% load i18n %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+<h1>Theme: {{ theme }}</h1>
+
+<div id="middle">
+    <div id="sidebar">
+        <h2>{% trans "Templates" %}</h2>
+        <ul id="templates">
+            {% for template in theme.templates.all %}
+            <li><a href="#">{{ template }}</a></li>
+            {% endfor %}
+        </ul>
+
+        <h2>{% trans "Static Files" %}</h2>
+        <ul id="static-files">
+            {% for static_file in theme.static_files.all %}
+            <li><a href="#">{{ static_file }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="container">
+    </div>
+</div>
+{% endblock content %}
+
+{% block body_scripts %}{% endblock %}
+

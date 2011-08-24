@@ -9,6 +9,7 @@ import views
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^themes/', include('themes.urls')),
     url(r'^$', views.home, name='home'),
 )
 

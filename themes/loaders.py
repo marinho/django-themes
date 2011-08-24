@@ -28,11 +28,13 @@ class Loader(BaseLoader):
         try:
             reg_template = _registered_templates[template_name]
         except KeyError:
-            reg_template = {}
-            #raise TemplateDoesNotExist('Template "%s" is not registered.'%template_name)
+            if app_settings.ALLOW_NOT_REGISTERED:
+                reg_template = {}
+            else:
+                raise TemplateDoesNotExist('Template "%s" is not registered.'%template_name)
 
         content = None
-        origin = None
+        full_name = None
         engine = None
         try:
             # Using cache to restore/store template content
@@ -45,21 +47,27 @@ class Loader(BaseLoader):
                 content = tpl.content
                 cache.set(cache_key, 'engine:%s;%s'%(engine,content), app_settings.CACHE_EXPIRATION)
 
-            origin = '%s:%s'%(active_theme, template_name)
+            full_name = '%s:%s'%(active_theme, template_name)
         except ThemeTemplate.DoesNotExist:
-            if reg_template and reg_template.get('mirroring', None):
-                content, origin = get_template(reg_template['mirroring'])
+            content = None
 
-        if content is None:
-            raise TemplateDoesNotExist('Template "%s" doesn\'t exist in active theme.'%template_name)
+        if not content:
+            if reg_template and reg_template.get('mirroring', None):
+                ret = get_template(reg_template['mirroring'])
+                content, origin = ret if isinstance(ret, (list,tuple)) else (ret, None)
+                return content, origin
+            else:
+                raise TemplateDoesNotExist('Template "%s" doesn\'t exist in active theme.'%template_name)
 
         if content.startswith('engine:'):
             engine, content = content.split(';', 1)
             engine = engine.split(':')[1]
 
+        origin = None #make_origin(full_name, self, full_name, template_dirs)
+
         try:
             template_class = get_engine_class(engine or app_settings.DEFAULT_ENGINE)
-            template = template_class(content, origin, template_name)
+            template = template_class(content, origin, full_name) #template_name)
 
             return template, None
         except TemplateDoesNotExist:

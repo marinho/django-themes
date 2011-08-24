@@ -7,7 +7,7 @@ from themes.models import Theme
 def home(request):
     return render_to_response('home', {}, context_instance=RequestContext(request))
 
-register_template('base')
+register_template('base', mirroring='base.html')
 register_template('home')
 register_template('contact')
 register_template('about')

@@ -7,6 +7,9 @@ class ThemeManager(models.Manager):
     def get_current(self):
         return self.get(is_default=True) # FIXME
 
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
 class Theme(models.Model):
     class Meta:
         ordering = ('verbose_name','name',)
@@ -25,10 +28,20 @@ class Theme(models.Model):
         for name, params in _registered_templates.items():
             self.templates.get_or_create(name=name)
 
+    def natural_key(self):
+        return (self.name,)
+
+
+class ThemeTemplateManager(models.Manager):
+    def get_by_natural_key(self, theme, name):
+        return self.get(theme__name=theme, name=name)
+
 class ThemeTemplate(models.Model):
     class Meta:
         unique_together = (('theme','name'),)
         ordering = ('name',)
+
+    objects = _default_manager = ThemeTemplateManager()
 
     theme = models.ForeignKey('Theme', related_name='templates')
     name = models.CharField(max_length=200)
@@ -39,10 +52,19 @@ class ThemeTemplate(models.Model):
     def __unicode__(self):
         return self.name
 
+    def natural_key(self):
+        return (self.theme.name, self.name)
+
+class ThemeStaticFileManager(models.Manager):
+    def get_by_natural_key(self, theme, name):
+        return self.get(theme__name=theme, name=name)
+
 class ThemeStaticFile(models.Model):
     class Meta:
         unique_together = (('theme','name'),)
         ordering = ('name',)
+
+    objects = _default_manager = ThemeStaticFileManager()
 
     theme = models.ForeignKey('Theme', related_name='static_files')
     name = models.CharField(max_length=50)
@@ -54,6 +76,9 @@ class ThemeStaticFile(models.Model):
 
     def get_url(self):
         return self.url if self.url else self.file.url
+
+    def natural_key(self):
+        return (self.theme.name, self.name)
 
 # SIGNALS
 from django.db.models import signals

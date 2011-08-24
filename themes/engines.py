@@ -7,19 +7,28 @@ from registration import _registered_templates
 import app_settings
 
 EXP_TAGS = re.compile('({%[ ]+(extends|include|theme_static_file)[ ]+"(.+?)"[ ]+%})')
+EXP_THEME_TAG = re.compile('{%[ ]+load[ ]+theme_static_file[ ]+.+?%}')
 
 class DjangoTemplate(Template):
     registered_template = None
 
     def __init__(self, template_string, origin=None, name='<Unknown Template>'):
-        self.theme_name, self.origin_name = origin.split(':')
-        self.registered_template = _registered_templates.get(name, {})
+        self.theme_name, self.template_name = name.split(':')
+        self.registered_template = _registered_templates.get(self.template_name, {})
+        force_themes_tags = False
 
         # Treat the values for tags 'extends', 'include' and 'theme_static_file'.
         for full, tag, value in EXP_TAGS.findall(template_string):
             if ':' not in value:
                 new_value = full.replace('"'+value+'"', '"%s:%s"'%(self.theme_name, value))
                 template_string = template_string.replace(full, new_value)
+
+                if tag == 'theme_static_file':
+                    force_themes_tags = True
+
+        # Forces {% load themes_tag %} if any of its tags are used but there is not loading
+        if force_themes_tags and not EXP_THEME_TAG.findall(template_string):
+            template_string = '{% load themes_tags %}' + template_string
 
         super(DjangoTemplate, self).__init__(template_string, origin, name)
 
