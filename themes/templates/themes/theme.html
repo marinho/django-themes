@@ -8,6 +8,9 @@
 <style>
     body {font-family:arial,helvetica;}
     iframe#up-file { height:30px; margin:0; padding:0; border:0; }
+    #middle {position:relative; height: 500px;}
+    #sidebar {width:200px;}
+    #editor {position:absolute; top:0; right:0; bottom:0; left:200px;}
 </style>
 {% endblock extra_head %}
 
@@ -19,30 +22,47 @@
         <h2>{% trans "Templates" %}</h2>
         <ul id="templates">
             {% for template in theme.templates.all %}
-            <li><a href="#">{{ template }}</a></li>
+            <li><a href="javascript:void(0)" class="edit" rel="template-{{ template.pk }}">{{ template }}</a></li>
             {% endfor %}
         </ul>
 
         <h2>{% trans "Static Files" %}</h2>
         <iframe src="{% url themes_up_file theme.name %}" id="up-file" scrolling="no"></iframe>
         <ul id="static-files">
-            {% for static_file in theme.static_files.all %}
-            <li><a href="#">{{ static_file }}</a></li>
+            {% for sf in theme.static_files.all %}
+            <li><a href="javascript:void(0)" class="edit" rel="static-file-{{ sf.pk }}">{{ sf }}</a></li>
             {% endfor %}
         </ul>
     </div>
 
-    <div id="container">
-    </div>
+    <div id="editor"></div>
 </div>
 {% endblock content %}
 
 {% block body_scripts %}{{ block.super }}
+<script src="{{ STATIC_URL }}ace/ace.js" charset="utf-8"></script>
 <script>
     function add_static_file_to_list(pk, name, url) {
-        $('<li><a href="#">'+name+'</a></li>').data('details', {'pk':pk, 'url':url})
+        $('<li><a href="javascript:void(0)" class="edit" rel="static-file-'+pk+'">'+name+'</a></li>')
             .appendTo('#static-files');
     }
+
+    $(document).ready(function(){
+        var editor = ace.edit("editor");
+
+        $('.edit').click(function(){
+            var url = '{% url themes_edit_child theme.name %}?rel='+$(this).attr('rel');
+            $.get(url, function(resp) {
+                $('#editor').text(resp);
+                var editor = ace.edit("editor");
+
+                var HtmlMode = require("ace/mode/html").Mode;
+                var JavaScriptMode = require("ace/mode/javascript").Mode;
+
+                //editor.getSession().setMode(new HtmlMode());
+            });
+        });
+    });
 </script>
 {% endblock body_scripts %}
 

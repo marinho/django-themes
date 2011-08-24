@@ -1,7 +1,10 @@
+import os
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.http import HttpResponse
 
 from models import Theme, ThemeTemplate, ThemeStaticFile
 
@@ -45,4 +48,22 @@ def theme_up_file(request, name):
             {'theme': theme, 'new_static_files': new_static_files},
             context_instance=RequestContext(request),
             )
+
+@csrf_exempt
+def theme_edit_child(request, name):
+    theme = get_object_or_404(Theme, name=name)
+
+    if request.method == 'POST':
+        pass
+    else:
+        rel = request.GET['rel']
+        typ, pk = rel.rsplit('-',1)
+
+        if typ == 'template':
+            item = theme.templates.get(pk=pk)
+            return HttpResponse('type(html)'+item.content)
+        elif typ == 'static-file':
+            item = theme.static_files.get(pk=pk)
+            ext = os.path.splitext(item.file.name)[-1][1:]
+            return HttpResponse('type(%s)'%(ext, item.file.read()))
 
