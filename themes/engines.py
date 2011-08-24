@@ -1,7 +1,36 @@
 from django.template import get_library, import_library, InvalidTemplateLibrary, Template
+from django.template.context import RequestContext
+
+from registration import _registered_templates
+import app_settings
 
 class DjangoTemplate(Template):
-    pass
+    registered_template = None
+
+    def __init__(self, template_string, origin=None, name='<Unknown Template>'):
+        self.theme_name, self.origin_name = origin.split(':')
+        self.registered_template = _registered_templates.get(name, {})
+
+        # Treat the values for tags 'extends', 'include' and 'theme_static_file'.
+        # TODO
+
+        super(DjangoTemplate, self).__init__(template_string, origin, name)
+
+    def render(self, context):
+        """
+        This is important to treat the block context variables.
+        """
+
+        # Creates a new context for this rendering, removing excluded variables
+        new_context = context.__copy__()
+        exc_vars = (self.registered_template.get('excluded_variables', None) or
+                app_settings.EXCLUDED_VARIABLES)
+        for k in (exc_vars or []):
+            for d in new_context.dicts:
+                if k in d:
+                    del d[k]
+
+        return super(DjangoTemplate, self).render(new_context)
 
 #---------------------------------------------------------------------------------------------
 # The code using Jinja2 was partially copied from the package "django-jinja2loader":

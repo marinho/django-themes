@@ -7,9 +7,15 @@ from themes.models import Theme
 def home(request):
     return render_to_response('home', {}, context_instance=RequestContext(request))
 
+register_template('base')
 register_template('home')
+register_template('contact')
+register_template('about')
 
 def choose_theme(request):
     if request.user.is_authenticated():
-        return Theme.objects.filter(is_default=False)[0]
+        try:
+            return Theme.objects.filter(is_default=False)[0]
+        except IndexError:
+            return None
 

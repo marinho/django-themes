@@ -62,6 +62,9 @@ def theme_post_save(instance, sender, **kwargs):
     # Sets the other themes "non-default" if this instance is default.
     if instance.is_default:
         sender.objects.exclude(pk=instance.pk).update(is_default=False)
+
+    # Creates the available templates for this theme
+    instance.create_templates()
 signals.post_save.connect(theme_post_save, sender=Theme)
 
 def themetemplate_post_save(instance, sender, **kwargs):

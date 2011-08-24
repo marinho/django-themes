@@ -4,7 +4,7 @@ from themes.models import Theme
 
 register = template.Library()
 
-class ThemeStaticFileURL(template.Node):
+class ThemeStaticFile(template.Node):
     name = None
 
     def __init__(self, name):
@@ -25,14 +25,14 @@ class ThemeStaticFileURL(template.Node):
 
         return static_file.get_url()
 
-def do_theme_static_file_url(parser, token):
+def do_theme_static_file(parser, token):
     """
     Examples:
     
-    {% theme_static_file_url "logo.gif" %}
-    {% theme_static_file_url "theme-name:logo.gif" %}
+    {% theme_static_file "logo.gif" %}
+    {% theme_static_file "theme-name:logo.gif" %}
     """
     bits = token.split_contents()
-    return ThemeStaticFileURL(bits[1])
-register.tag('theme_static_file_url', do_theme_static_file_url)
+    return ThemeStaticFile(bits[1])
+register.tag('theme_static_file', do_theme_static_file)
 

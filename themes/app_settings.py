@@ -20,5 +20,5 @@ NOT_FOUND_RETURNS_EMPTY = getattr(settings, 'THEMES_NOT_FOUND_RETURNS_EMPTY', Fa
 # developer can use the URL pattern, the host name, or any other criteria for that.
 CHOOSING_FUNCTION = getattr(settings, 'THEMES_CHOOSING_FUNCTION', None)
 
-CACHE_EXPIRATION = getattr(settings, 'THEMES_CACHE_EXPIRATION', 60 * 60 * 24)
+CACHE_EXPIRATION = getattr(settings, 'THEMES_CACHE_EXPIRATION', 1) #60 * 60 * 24)
 
