@@ -23,14 +23,21 @@
     #current #item-type, #current #item-name {margin:5px; float:left;}
     #current #save, #current #delete-item {float:right; margin:5px; display:none;}
     #new-template, #new-static-file, #new-static-url {font-size:0.8em; float:right; margin-left:10px; font-weight:normal;}
+    #menu-theme {margin:5px; padding:0; overflow:hidden; font-size:0.8em;}
+    #menu-theme li {list-style:none; float:left; display:block; margin-right:5px;}
 </style>
 {% endblock extra_head %}
 
 {% block content %}
 <div id="middle">
     <div id="sidebar">
-        <h1>Theme: {{ theme }} <a href="{% url themes_home %}">All</a>
-            <a href="javascript:void(0)" id="delete-theme">Delete</a></h1>
+        <h1>Theme: {{ theme }}</h1>
+        <ul id="menu-theme">
+            <li><a href="{% url themes_home %}">All</a></li>
+            <li><a href="javascript:void(0)" id="delete-theme">Delete</a></li>
+            <li>{% if theme.is_default %}{% trans "Is Default" %}
+                {% else %}<a href="{% url themes_set_default theme.name %}">Set Default</a>{% endif %}</li>
+        </ul>
 
         <h2>{% trans "Templates" %}<a href="javascript:void(0)" id="new-template">{% trans "New" %}</a></h2>
         <ul id="templates">
@@ -90,7 +97,6 @@
         var edit = $(this);
         var url = '{% url themes_edit_child theme.name %}?rel='+edit.attr('rel');
         $.get(url, function(resp) {
-console.log(['x', resp]);
             if (typeof resp == 'string' && resp.indexOf('{') == 0) resp = JSON.parse(resp);
 
             if (edit.attr('rel').indexOf('template') == 0) {

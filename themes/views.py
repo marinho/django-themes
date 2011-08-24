@@ -50,6 +50,13 @@ def theme_delete(request, name):
     messages.info(request, _('Theme "%s" deleted.')%name)
     return HttpResponseRedirect(reverse('themes_home'))
 
+def theme_set_default(request, name):
+    theme = get_object_or_404(Theme, name=name)
+    theme.is_default = True
+    theme.save()
+    messages.info(request, _('Theme "%s" set as default.')%name)
+    return HttpResponseRedirect(reverse('themes_theme', args=(name,)))
+
 @csrf_exempt
 def theme_up_file(request, name):
     theme = get_object_or_404(Theme, name=name)
