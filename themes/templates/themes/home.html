@@ -11,6 +11,12 @@
 
 <div id="middle">
     <div id="sidebar">
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="name"/>
+            <input type="submit" value="{% trans "Create a new Theme" %}"/>
+        </form>
+
         <ul id="themes">
             {% for theme in themes %}
             <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a></li>

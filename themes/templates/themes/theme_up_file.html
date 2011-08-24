@@ -8,6 +8,7 @@
         </style>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <!--<script src="{{ STATIC_URL }}js/jquery.js"></script>-->
         <script>
             var file_up_entered = 0;
 
@@ -33,7 +34,7 @@
 
         <script>
             {% for st in new_static_files %}
-            parent.add_static_file_to_list('{{ st.pk }}', '{{ st.name }}', '{{ st.file.url }}');
+            parent.add_static_file_to_list('{{ st.pk }}', '{{ st.name }}', '{{ st.file.url }}', 'file');
             {% endfor %}
 
             $(document).ready(function(){

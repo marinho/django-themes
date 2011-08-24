@@ -70,12 +70,16 @@ class ThemeStaticFile(models.Model):
     name = models.CharField(max_length=50)
     url = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to='theme-static-files', blank=True, null=True)
+    mime_type = models.CharField(max_length=50, blank=True)
 
     def __unicode__(self):
         return self.name
 
     def get_url(self):
         return self.url if self.url else self.file.url
+
+    def get_type(self):
+        return 'url' if self.url else 'file'
 
     def natural_key(self):
         return (self.theme.name, self.name)

@@ -4,6 +4,7 @@
         <title>{% block title %}{% endblock %} - Themes</title>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <!--<script src="{{ STATIC_URL }}js/jquery.js"></script>-->
 
         <style>
             body {font-family:arial,helvetica;}
@@ -13,6 +14,10 @@
     </head>
 
     <body>
+        <ul id="messages">
+            {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
+        </ul>
+
         {% block content %}{% endblock %}
 
         {% block body_scripts %}{% endblock %}
