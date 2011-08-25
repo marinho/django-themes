@@ -7,8 +7,8 @@ If you want to test, do this (somewhere):
     $ virtualenv env
     $ source env/bin/activate
     $ pip install -r test_project/requirements.txt
-    $ python setup.py develop
     $ cd test_project
+    $ ln -s ../themes .
     $ python manage.py syncdb
     $ python manage.py runserver
 
