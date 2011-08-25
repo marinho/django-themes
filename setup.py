@@ -39,11 +39,11 @@ for dirpath, dirnames, filenames in os.walk(app_dir):
         data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])    
 
 setup(
-    name='Themes',
+    name='django-themes',
     version=themes.__version__,
-    #url='',
-    #author=themes.__author__,
-    #license=themes.__license__,
+    url=themes.__url__,
+    author=themes.__author__,
+    license=themes.__license__,
     packages=packages,
     data_files=data_files,
     )

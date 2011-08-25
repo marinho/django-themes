@@ -6,7 +6,6 @@ If you want to test, do this (somewhere):
     $ cd django-themes
     $ virtualenv env
     $ source env/bin/activate
-    $ pip install -r requirements.txt
     $ pip install -r test_project/requirements.txt
     $ python setup.py develop
     $ cd test_project

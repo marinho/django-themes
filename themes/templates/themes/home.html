@@ -34,7 +34,7 @@
 
     <ul id="themes">
         {% for theme in themes %}
-        <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a></li>
+        <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a> {% if theme.is_default%}- default{% endif %}</li>
         {% endfor %}
     </ul>
 </div>

@@ -1,4 +1,7 @@
-from django.conf import settings
+try:
+    from django.conf import settings
+except ImportError:
+    settings = None
 
 # It could be 'jinja2.Template' or any other
 DEFAULT_ENGINE = getattr(settings, 'THEMES_DEFAULT_ENGINE', 'themes.engines.DjangoTemplate')
