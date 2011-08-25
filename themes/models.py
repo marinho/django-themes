@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.cache import cache
+from django.utils.translation import ugettext_lazy as _
 
 from registration import _registered_templates
 
@@ -13,6 +14,11 @@ class ThemeManager(models.Manager):
 class Theme(models.Model):
     class Meta:
         ordering = ('verbose_name','name',)
+        permissions = (
+                ('import_theme', 'Can import Theme'),
+                ('download_theme', 'Can download Theme'),
+                ('set_default_theme', 'Can set default Theme'),
+                )
 
     objects = _default_manager = ThemeManager()
 

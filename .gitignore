@@ -4,3 +4,4 @@ env
 .*.swp
 .coverage
 data.db
+local_settings.py

@@ -154,3 +154,9 @@ NOSE_ARGS = ['--with-coverage', '--with-doctest', '--doctest-tests', '--doctest-
 THEMES_CHOOSING_FUNCTION = 'views.choose_theme'
 #THEMES_EXCLUDED_VARIABLES = ('perms',)
 
+try:
+    from local_settings import *
+except ImportError:
+    pass
+
+

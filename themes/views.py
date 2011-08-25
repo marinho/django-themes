@@ -12,10 +12,12 @@ from django.core.files.base import ContentFile
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import permission_required
 
 from models import Theme, ThemeTemplate, ThemeStaticFile
 from packaging import export_theme, import_theme
 
+@permission_required('themes.change_theme')
 def home(request):
     themes = Theme.objects.order_by('verbose_name')
 
@@ -37,6 +39,7 @@ def home(request):
             context_instance=RequestContext(request),
             )
 
+@permission_required('themes.change_theme')
 def theme(request, name):
     theme = get_object_or_404(Theme, name=name)
     return render_to_response(
@@ -45,6 +48,7 @@ def theme(request, name):
             context_instance=RequestContext(request),
             )
 
+@permission_required('themes.delete_theme')
 def theme_delete(request, name):
     theme = get_object_or_404(Theme, name=name)
 
@@ -62,6 +66,7 @@ def theme_delete(request, name):
     messages.info(request, _('Theme "%s" deleted.')%name)
     return HttpResponseRedirect(reverse('themes_home'))
 
+@permission_required('themes.set_default_theme')
 def theme_set_default(request, name):
     theme = get_object_or_404(Theme, name=name)
     theme.is_default = True
@@ -70,6 +75,7 @@ def theme_set_default(request, name):
     return HttpResponseRedirect(reverse('themes_theme', args=(name,)))
 
 @csrf_exempt
+@permission_required('themes.change_theme')
 def theme_up_file(request, name):
     theme = get_object_or_404(Theme, name=name)
     new_static_files = []
@@ -96,6 +102,7 @@ def theme_up_file(request, name):
             )
 
 @csrf_exempt
+@permission_required('themes.change_theme')
 def theme_edit_child(request, name):
     theme = get_object_or_404(Theme, name=name)
 
@@ -141,6 +148,7 @@ def theme_edit_child(request, name):
             return HttpResponse(simplejson.dumps(ret)) #, mime_type='text/javascript')
 
 @csrf_exempt
+@permission_required('themes.change_theme')
 def theme_delete_child(request, name):
     theme = get_object_or_404(Theme, name=name)
     ret = {'result':'ok'}
@@ -158,6 +166,7 @@ def theme_delete_child(request, name):
     return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
 
 @csrf_exempt
+@permission_required('themes.add_themetemplate')
 def theme_create_template(request, name):
     theme = get_object_or_404(Theme, name=name)
     ret = {}
@@ -173,6 +182,7 @@ def theme_create_template(request, name):
     return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
 
 @csrf_exempt
+@permission_required('themes.add_themestaticfile')
 def theme_create_static_file(request, name):
     theme = get_object_or_404(Theme, name=name)
     ret = {}
@@ -199,6 +209,7 @@ def theme_create_static_file(request, name):
 
     return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
 
+@permission_required('themes.download_theme')
 def theme_download(request, name):
     theme = get_object_or_404(Theme, name=name)
 
@@ -212,6 +223,7 @@ def theme_download(request, name):
 
     return resp
 
+@permission_required('themes.import_theme')
 def theme_import(request):
     if request.method == 'POST':
         try:
