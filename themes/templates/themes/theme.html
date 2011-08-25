@@ -51,7 +51,7 @@
 
         <h2>{% trans "Static Files" %}
             <a href="javascript:void(0)" id="new-static-file">{% trans "New File" %}</a>
-            <a href="javascript:void(0)" id="new-static-url">{% trans "New URL" %}</h2>
+            <a href="javascript:void(0)" id="new-static-url">{% trans "New URL" %}</a></h2>
         <iframe src="{% url themes_up_file theme.name %}" id="up-file" scrolling="no"></iframe>
         <ul id="static-files">
             {% for sf in theme.static_files.all %}

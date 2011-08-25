@@ -14,10 +14,10 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django-themes',
-        'USER': 'postgres',
-        'PASSWORD': '123456',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(PROJECT_ROOT_PATH, 'data.db'),
+        'USER': '',
+        'PASSWORD': '',
         'HOST': '',
         'PORT': '',
     }
