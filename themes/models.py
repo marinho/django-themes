@@ -2,7 +2,8 @@ from django.db import models
 from django.core.cache import cache
 from django.utils.translation import ugettext_lazy as _
 
-from registration import _registered_templates
+from registration import list_registered_templates
+import app_settings
 
 class ThemeManager(models.Manager):
     def get_current(self):
@@ -31,7 +32,7 @@ class Theme(models.Model):
 
     def create_templates(self):
         """Creates a template instance for every registered templates."""
-        for name, params in _registered_templates.items():
+        for name, params in list_registered_templates():
             self.templates.get_or_create(name=name)
 
     def natural_key(self):
@@ -105,7 +106,7 @@ signals.post_save.connect(theme_post_save, sender=Theme)
 def themetemplate_post_save(instance, sender, **kwargs):
     # Cache invalidation
     cache_key = 'themes:%s|%s'%(instance.theme.name, instance.name)
-    if cache.get(cache_key):
+    if app_settings.CACHE_EXPIRATION and cache.get(cache_key):
         cache.set(cache_key, None, 1) # Expires fastly, to clear cache storage
 signals.post_save.connect(themetemplate_post_save, sender=ThemeTemplate)
 

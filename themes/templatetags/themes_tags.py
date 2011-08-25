@@ -1,6 +1,7 @@
 from django import template
 
-from themes.models import Theme
+from themes.models import Theme, ThemeStaticFile
+from themes import app_settings
 
 register = template.Library()
 
@@ -21,7 +22,13 @@ class ThemeStaticFile(template.Node):
         else:
             theme = Theme.objects.get_current()
 
-        static_file = theme.static_files.get(name=name)
+        try:
+            static_file = theme.static_files.get(name=name)
+        except ThemeStaticFile.DoesNotExist:
+            if app_settings.NOT_FOUND_RETURNS_EMPTY:
+                return ''
+            else:
+                raise
 
         return static_file.get_url()
 

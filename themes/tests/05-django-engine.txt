@@ -10,6 +10,8 @@ to the context.
 
 Default engine comes from app_settings.DEFAULT_ENGINE (settings.THEMES_DEFAULT_ENGINE)
 
+    >>> from djangoplus.test_utils import assert_equal
+
     >>> from themes.models import ThemeTemplate
     >>> from themes.app_settings import DEFAULT_ENGINE
 
@@ -22,18 +24,20 @@ Default engine comes from app_settings.DEFAULT_ENGINE (settings.THEMES_DEFAULT_E
     Our address is: 290 Broomhouse Ln
 
     >>> tpl1 = ThemeTemplate.objects.get(theme__name='default', name='address')
-    >>> tpl1.content = """{% extends "default:base" %}
+    >>> tpl1.content = """{% extends "base" %}
     ... {% block content %}{{ block.super }}Just testing{% endblock %}"""
     >>> tpl1.save()
 
-    >>> base_tpl = ThemeTemplate()
-    >>> base_tpl.theme = tpl1.theme
-    >>> base_tpl.name = 'base'
-    >>> base_tpl.content = """Title here.
-    ... {% block content %}Comes before {% endblock %}"""
-    >>> base_tpl.save()
+    >>> base_tpl = tpl1.theme.templates.create(
+    ...     name='base',
+    ...     content='Title here.{% block content %}Comes before {% endblock %}',
+    ... )
+    >>> from themes.registration import register_template
+    >>> register_template('base')
+
+    >>> assert_equal(list(tpl1.theme.templates.values_list('name', flat=True)),
+    ...     [u'about', u'address', u'base', u'contact'])
 
     >>> print render_to_string('default:address')
-    Title here.
-    Comes before Just testing
+    Title here.Comes before Just testing
     

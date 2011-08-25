@@ -6,8 +6,8 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 
 import app_settings
-from registration import _registered_templates
 from models import Theme, ThemeTemplate
+from registration import get_registered_template
 
 class Loader(BaseLoader):
     is_usable = True
@@ -16,17 +16,18 @@ class Loader(BaseLoader):
         if ':' in template_name:
             active_theme, template_name = template_name.split(':', 1)
         else:
-            active_theme = cache.get('themes:active', None)
+            active_theme = cache.get('themes:active', None) if app_settings.CACHE_EXPIRATION else None
             if not active_theme:
                 try:
                     theme = Theme.objects.get(is_default=True)
-                    cache.set('themes:active', theme.name, app_settings.CACHE_EXPIRATION)
+                    if app_settings.CACHE_EXPIRATION:
+                        cache.set('themes:active', theme.name, app_settings.CACHE_EXPIRATION)
                     active_theme = theme.name
                 except Theme.DoesNotExist:
                     raise TemplateDoesNotExist('There\'s no active theme.')
 
         try:
-            reg_template = _registered_templates[template_name]
+            reg_template = get_registered_template(template_name)
         except KeyError:
             if app_settings.ALLOW_NOT_REGISTERED:
                 reg_template = {}
@@ -39,13 +40,14 @@ class Loader(BaseLoader):
         try:
             # Using cache to restore/store template content
             cache_key = 'themes:%s|%s'%(active_theme, template_name)
-            content = cache.get(cache_key, None)
+            content = cache.get(cache_key, None) if app_settings.CACHE_EXPIRATION else None
 
             if not content:
                 tpl = ThemeTemplate.objects.get(theme__name=active_theme, name=template_name)
                 engine = tpl.engine
                 content = tpl.content
-                cache.set(cache_key, 'engine:%s;%s'%(engine,content), app_settings.CACHE_EXPIRATION)
+                if app_settings.CACHE_EXPIRATION:
+                    cache.set(cache_key, 'engine:%s;%s'%(engine,content), app_settings.CACHE_EXPIRATION)
 
             full_name = '%s:%s'%(active_theme, template_name)
         except ThemeTemplate.DoesNotExist:

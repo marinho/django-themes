@@ -3,18 +3,41 @@ import re
 from django.template import get_library, import_library, InvalidTemplateLibrary, Template
 from django.template.context import RequestContext
 
-from registration import _registered_templates
 import app_settings
+from registration import get_registered_template
+from exceptions import UnavailableLoad, UnavailableTag, UnavailableFilter
 
-EXP_TAGS = re.compile('({%[ ]+(extends|include|theme_static_file)[ ]+"(.+?)"[ ]+%})')
-EXP_THEME_TAG = re.compile('{%[ ]+load[ ]+theme_static_file[ ]+.+?%}')
+EXP_TAGS = re.compile('({%[ ]*(extends|include|theme_static_file)[ ]+"(.+?)"[ ]*%})')
+EXP_THEME_TAG = re.compile('{%[ ]*load[ ]+theme_static_file[ ]+.+?%}') # FIXME: This is not perfect (the optional space before the %})
+EXP_AV_LOAD = re.compile('{%[ ]*load[ ]+([\w_ -]+)[ ]*%}')
+EXP_AV_TAG = re.compile('{%[ ]*([\w_]+)? ')
+EXP_AV_FILTER = re.compile('{{[^}|]+\|([^ %}]+)')
+ALL = '*'
+DEFAULT_TAGS_NODES = {
+        'for': ['endfor','empty'],
+        'ifequal': ['else','endifequal'],
+        'with': ['endwith'],
+        'ifnotequal': ['else','endifnotequal'],
+        'ifchanged': ['else','endifchanged'],
+        'filter': ['endfilter'],
+        'if': ['else','endif'],
+        'spaceless': ['endspaceless'],
+        'block': ['endblock'],
+        'comment': ['endcomment'],
+
+        # i18n
+        'blocktrans': ['endblocktrans'],
+
+        # cache
+        'cache': ['endcache'],
+        }
 
 class DjangoTemplate(Template):
     registered_template = None
 
     def __init__(self, template_string, origin=None, name='<Unknown Template>'):
         self.theme_name, self.template_name = name.split(':')
-        self.registered_template = _registered_templates.get(self.template_name, {})
+        self.registered_template = get_registered_template(self.template_name, {})
         force_themes_tags = False
 
         # Treat the values for tags 'extends', 'include' and 'theme_static_file'.
@@ -30,7 +53,54 @@ class DjangoTemplate(Template):
         if force_themes_tags and not EXP_THEME_TAG.findall(template_string):
             template_string = '{% load themes_tags %}' + template_string
 
+        self.check_allowed_template(template_string)
+
         super(DjangoTemplate, self).__init__(template_string, origin, name)
+
+    def check_allowed_template(self, template_string):
+        # Blocks unavailable loads (template tags libraries)
+        available_loads = (self.registered_template.get('available_loads', None) or
+                app_settings.AVAILABLE_LOADS or [])
+        if available_loads != ALL:
+            available_loads = list(available_loads)
+
+            found = EXP_AV_LOAD.findall(template_string)
+            if found:
+                libs = reduce(lambda a,b: a+b, [i.strip().split() for i in found])
+                diff = set(filter(bool, libs)).difference(set(filter(bool, available_loads)))
+                if diff:
+                    raise UnavailableLoad('The load of libraries "%s" is not available.'%'", "'.join(diff))
+
+        # Blocks unavailable template tags
+        available_tags = (self.registered_template.get('available_tags', None) or
+                app_settings.AVAILABLE_TAGS or [])
+        if available_tags != ALL:
+            available_tags = list(available_tags)
+
+            # Loads node lists for default tags
+            for tag in available_tags:
+                if DEFAULT_TAGS_NODES.get(tag, None):
+                    available_tags.extend(DEFAULT_TAGS_NODES[tag])
+
+            found = EXP_AV_TAG.findall(template_string)
+            if found:
+                diff = set(filter(bool, found)).difference(set(filter(bool, available_tags)))
+                if diff:
+                    raise UnavailableTag('The template tags "%s" are not available.'%'", "'.join(diff))
+
+        # Blocks unavailable template filters
+        available_filters = (self.registered_template.get('available_filters', None) or
+                app_settings.AVAILABLE_FILTERS or [])
+        if available_filters != ALL:
+            available_filters = list(available_filters)
+
+            found = EXP_AV_FILTER.findall(template_string)
+            if found:
+                filters = reduce(lambda a,b: a+b, [i.strip().split('|') for i in found])
+                filters = filter(bool, [f.split(':')[0] for f in filters])
+                diff = set(filter(bool, filters)).difference(set(filter(bool, available_filters)))
+                if diff:
+                    raise UnavailableFilter('The template filters "%s" are not available.'%'", "'.join(diff))
 
     def render(self, context):
         """

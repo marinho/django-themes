@@ -1,0 +1,157 @@
+SECURITY FEATURES
+=================
+
+As a tool that allows end users writing themes and templates, it's necessary to ensure
+the security on some functions.
+
+Basic stuff
+
+    >>> from djangoplus.test_utils import assert_equal
+    >>> from themes import app_settings
+    >>> app_settings.CACHE_EXPIRATION = None
+
+    >>> from themes import registration
+    >>> registration._registered_templates = {}
+
+    >>> from themes.models import Theme
+    >>> theme1 = Theme.objects.create(name='safe-theme', verbose_name='Safe Theme', is_default=True)
+    >>> assert_equal(list(theme1.templates.values_list('name', flat=True)), [])
+
+    >>> tpl1 = theme1.templates.create(name='home')
+
+    >>> tpl1.content = 'The most basic one.'
+    >>> tpl1.save()
+
+    >>> from django.template.loader import render_to_string
+
+Default settings
+----------------
+
+The registered and not registered templates use default settings if they don't declare
+them especifically.
+
+    >>> registration.register_template('home')
+    >>> print render_to_string('home')
+    The most basic one.
+
+Available loads
+
+    >>> from themes.exceptions import UnavailableLoad
+
+    >>> app_settings.AVAILABLE_LOADS = ['i18n']
+
+    >>> tpl1.content = '{% load i18n %}The most basic one.'
+    >>> tpl1.save()
+    >>> print render_to_string('home')
+    The most basic one.
+
+    >>> tpl1.content = '{% load flatpages %}The most basic one.'
+    >>> tpl1.save()
+    >>> try:
+    ...     render_to_string('home')
+    ... except UnavailableLoad, e:
+    ...     print e
+    The load of libraries "flatpages" is not available.
+
+    >>> app_settings.AVAILABLE_LOADS = ['i18n','flatpages']
+    >>> print render_to_string('home')
+    The most basic one.
+
+    >>> app_settings.AVAILABLE_LOADS = '*'
+    >>> print render_to_string('home')
+    The most basic one.
+
+Available tags
+
+    >>> from themes.exceptions import UnavailableTag
+
+    >>> app_settings.AVAILABLE_TAGS = ['if','for','extends']
+
+    >>> tpl1.content = '{% if 1 %}True{% else %}False{% endif %}'
+    >>> tpl1.save()
+    >>> print render_to_string('home')
+    True
+
+    >>> tpl1.content = 'Just this.{% comment %}My comment about{% endcomment%}'
+    >>> tpl1.save()
+    >>> try:
+    ...     render_to_string('home')
+    ... except UnavailableTag, e:
+    ...     print e
+    The template tags "comment" are not available.
+
+    >>> app_settings.AVAILABLE_TAGS = ['if','for','extends','comment']
+    >>> print render_to_string('home')
+    Just this.
+
+Available filters
+
+    >>> from themes.exceptions import UnavailableFilter
+
+    >>> app_settings.AVAILABLE_FILTERS = ['upper','length']
+
+    >>> tpl1.content = 'Look:{{ name|upper }}'
+    >>> tpl1.save()
+    >>> print render_to_string('home', {'name':'LeTiCiA'})
+    Look:LETICIA
+
+    >>> tpl1.content = 'Look:{{ name|lower|yesno:"yeah,no,maybe" }}'
+    >>> tpl1.save()
+    >>> try:
+    ...     render_to_string('home', {'name':'LeTiCiA'})
+    ... except UnavailableFilter, e:
+    ...     print e
+    The template filters "lower", "yesno" are not available.
+
+    >>> app_settings.AVAILABLE_FILTERS = ['upper','length','lower','yesno']
+
+    >>> tpl1.content = 'Look:{{ name|lower|yesno:"yeah,no,maybe" }}'
+    >>> tpl1.save()
+    >>> print render_to_string('home', {'name':'LeTiCiA'})
+    Look:yeah
+
+Available includes
+Excluded variables
+Allowing not registered templates
+
+Registered templates
+--------------------
+
+Registering a template ensures it will do only what it is allowed to do.
+
+Available loads
+Available tags
+Available filters
+Available includes
+Available variables
+Available blocks
+Excluded variables
+Allowing not registered templates
+
+User permissions
+----------------
+
+The interface tools are allowed only for users with permission to use them.
+
+Creating themes
+Creating templates
+Creating static files
+Changing themes
+Changing templates
+Changing static files
+Deleting themes
+Deleting templates
+Deleting static files
+Downloading themes
+Importing themes
+Setting a default theme
+
+Not existing returns empty
+--------------------------
+
+The setting 'THEMES_NOT_FOUND_RETURNS_EMPTY' (default False) can be set to return empty instead
+of raising error if that item doesn't exist.
+
+Templates
+Static files
+

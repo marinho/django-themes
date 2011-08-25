@@ -11,7 +11,7 @@ The internal variable to store registered templates is this:
 
     >>> from djangoplus.test_utils import assert_equal
 
-    >>> from themes import _registered_templates
+    >>> from themes.registration import _registered_templates
     >>> _registered_templates
     {}
 
@@ -50,7 +50,7 @@ A full example of template registration
     ...     available_blocks=('extra_head', 'title', 'content', 'body_scripts'),
     ...     available_vars=('form_contact', 'user', 'messages', 'STATIC_URL'),
     ...     available_loads=('i18n', 'comments'),
-    ...     available_tags=('for', 'if', 'with', 'include', 'extends'),
+    ...     available_tags=('for', 'if', 'with', 'include', 'extends', 'block'),
     ...     available_filters='*',
     ...     available_includes=('user-box', 'messages-box'),
     ...     excluded_vars=('request', 'perms'),
@@ -61,7 +61,7 @@ A full example of template registration
     ...     'available_blocks': ('extra_head', 'title', 'content', 'body_scripts'),
     ...     'available_includes': ('user-box', 'messages-box'), 'available_loads': ('i18n', 'comments'),
     ...     'mirroring': 'public/address.html', 'default_base_template': 'public/base.html',
-    ...     'available_tags': ('for', 'if', 'with', 'include', 'extends'),
+    ...     'available_tags': ('for', 'if', 'with', 'include', 'extends', 'block'),
     ...     'excluded_vars': ('request', 'perms'), 'verbose_name': 'Address Page'})
 
 

@@ -25,3 +25,9 @@ def register_template(name, **kwargs):
     kwargs['name'] = name
     _registered_templates[name] = kwargs
 
+def get_registered_template(name, *args):
+    return _registered_templates.get(name, *args)
+
+def list_registered_templates():
+    return _registered_templates.items()
+
