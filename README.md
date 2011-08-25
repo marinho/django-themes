@@ -1,3 +1,17 @@
+## How it works
+
+Basically:
+
+- the applications register their templates they are able to load from Themes (this is important
+  for security, but there's a setting to allow not registered templates with standard configuration);
+- each Theme has the templates the project registered;
+- a Theme is set as default Theme, but a function can set it dinamically from the current request;
+- when a template is required, our template loader tries to load it from current Theme, if it finds,
+  so returns that template (instead from file system);
+- you can upload static files for the Themes;
+- you can download and import Themes;
+- works with Django and Jinja2 (still in development).
+
 ## Testing
 
 If you want to test, do this (somewhere):
