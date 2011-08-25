@@ -5,7 +5,8 @@ from themes.registration import register_template
 from themes.models import Theme
 
 def home(request):
-    return render_to_response('home', {}, context_instance=RequestContext(request))
+    return render_to_response('%s:home'%request.theme.name, {},
+            context_instance=RequestContext(request))
 
 register_template('base', mirroring='base.html')
 register_template('home')

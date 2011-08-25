@@ -6,13 +6,44 @@ That's a middleware to choose the current theme and set it to the current reques
 For that, it uses a function set in settings, so the developer can set it as he/she wants,
 based on criteria he/she needs.
 
+    >>> from djangoplus.test_utils import assert_equal
+
     >>> from django.test.client import Client
     >>> cl = Client()
 
+    >>> from themes import app_settings
+    >>> assert_equal(app_settings.CHOOSING_FUNCTION, 'views.choose_theme')
+
     >>> from themes.models import ThemeTemplate, Theme
 
-    >>> theme = Theme.objects.get(is_default=True)
-    >>> home = theme.templates.create(name='home', content='Just testing this home page.')
+The default theme
+
+    >>> theme1 = Theme.objects.get(name='default')
+    >>> theme1.is_default = True
+    >>> theme1.save()
+
+    >>> home1, new = theme1.templates.get_or_create(name='home')
+    >>> home1.content = 'Just testing this home page.'
+    >>> home1.save()
 
     >>> resp = cl.get('/')
+    >>> assert_equal(resp.content, 'Just testing this home page.')
+
+The other theme
+
+    >>> theme2 = Theme.objects.get(name='another-theme')
+
+    >>> home2, new = theme2.templates.get_or_create(name='home')
+    >>> home2.content = 'This is another theme'
+    >>> home2.save()
+
+Now changing the choose function to choose another theme
+
+    >>> app_settings.CHOOSING_FUNCTION = 'middleware_funcs.choose_theme'
+
+    >>> from themes import app_settings
+    >>> assert_equal(app_settings.CHOOSING_FUNCTION, 'middleware_funcs.choose_theme')
+
+    >>> resp = cl.get('/')
+    >>> assert_equal(resp.content, 'This is another theme')
 

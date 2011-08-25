@@ -1,0 +1,59 @@
+PACKAGING THEMES
+================
+
+This app supports exporting and importing themes using zip-compressed files, including their
+templates and uploaded static files.
+
+    >>> from djangoplus.test_utils import assert_equal
+    >>> from themes.models import Theme
+
+Creating a basic theme to export
+
+    >>> new_theme = Theme.objects.create(name='new-theme', verbose_name='New Theme')
+
+    >>> tpl1 = new_theme.templates.create(name='landing', content='Text here')
+    >>> tpl2 = new_theme.templates.create(name='ideas', content='First page')
+
+    >>> sf1 = new_theme.static_files.create(url='http://static.alatazan.com/media2/img/logo-84.png',
+    ...     name='logo.png', mime_type='image/png')
+    >>> sf2 = new_theme.static_files.create(url='http://static.alatazan.com/media2/css/layout.css',
+    ...     name='layout.css', mime_type='text/css')
+
+    >>> from django.core.files.base import ContentFile
+    >>> sf3 = new_theme.static_files.create(name='main.js', mime_type='text/javascript')
+    >>> sf3_content = ContentFile('function a(m) { alert(m); }')
+    >>> sf3.file.save('main.js', sf3_content)
+
+Export function (used for download)
+-----------------------------------
+
+    >>> from themes.packaging import export_theme
+    >>> file_path = export_theme(new_theme)
+
+Deleting theme and its children
+
+    >>> for sf in new_theme.static_files.all():
+    ...     if not sf.url:
+    ...         sf.file.delete()
+    ...     sf.delete()
+
+    >>> new_theme.templates.all().delete()
+    >>> new_theme.delete()
+
+Import function
+---------------
+
+    >>> from themes.packaging import import_theme
+
+    >>> fp = file(file_path)
+    >>> imp_theme = import_theme(fp)
+
+    >>> assert_equal(imp_theme.name, new_theme.name)
+    >>> assert_equal(imp_theme.verbose_name, new_theme.verbose_name)
+    >>> assert_equal(list(imp_theme.templates.values_list('name', flat=True)),
+    ...     [u'about', u'address', u'base', u'contact', u'home', u'ideas', u'landing'])
+    >>> assert_equal(list(imp_theme.static_files.values_list('name', flat=True)),
+    ...     [u'layout.css', u'logo.png', u'main.js'])
+    >>> assert_equal(imp_theme.static_files.get(name='main.js').file.read(),
+    ...     'function a(m) { alert(m); }')
+

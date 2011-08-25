@@ -1,3 +1,8 @@
+# Overview on django-themes
+
+This is a pluggable application for theme supporting on Django. But together with the themes, it is
+a good way to support templates stored in database by an easy way.
+
 ## How it works
 
 Basically:

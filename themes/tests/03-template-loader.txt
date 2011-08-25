@@ -9,7 +9,7 @@ theme (or the mirrored respective ones).
 
     >>> from django.template.loader import get_template
     >>> about_tpl = get_template('about')
-    >>> assert_equal(about_tpl.name, 'about')
+    >>> assert_equal(about_tpl.name, 'another-theme:about')
 
     >>> from django.template.loader import render_to_string
     >>> print render_to_string('about', {'company_name': 'Mochii Ltd.'})
