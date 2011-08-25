@@ -8,9 +8,9 @@ Basically:
 - a Theme is set as default Theme, but a function can set it dinamically from the current request;
 - when a template is required, our template loader tries to load it from current Theme, if it finds,
   so returns that template (instead from file system);
-- you can upload static files for the Themes;
-- you can download and import Themes;
-- works with Django and Jinja2 (still in development).
+- you can upload static files for the themes;
+- you can download and import themes;
+- works with Django's template renderer and Jinja2 (still in development).
 
 ## Testing
 
