@@ -14,6 +14,7 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 
 from models import Theme, ThemeTemplate, ThemeStaticFile
+from packaging import export_theme, import_theme
 
 def home(request):
     themes = Theme.objects.order_by('verbose_name')
@@ -46,7 +47,18 @@ def theme(request, name):
 
 def theme_delete(request, name):
     theme = get_object_or_404(Theme, name=name)
+
+    # Templates first
+    theme.templates.all().delete()
+
+    # Delete static files and their phisical files
+    for sf in theme.static_files.all():
+        sf.file.delete()
+        sf.delete()
+
+    # Finally, deletes the theme
     theme.delete()
+
     messages.info(request, _('Theme "%s" deleted.')%name)
     return HttpResponseRedirect(reverse('themes_home'))
 
@@ -186,4 +198,28 @@ def theme_create_static_file(request, name):
             ret = {'result':'ok', 'info':{'pk':sf.pk, 'url':sf.get_url()}}
 
     return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
+
+def theme_download(request, name):
+    theme = get_object_or_404(Theme, name=name)
+
+    zipf_path = export_theme(theme)
+    fp = file(zipf_path)
+    content = fp.read()
+    fp.close()
+
+    resp = HttpResponse(content, mimetype='application/zip')
+    resp['Content-Disposition'] = 'attachment; filename=theme-%s.zip'%name
+
+    return resp
+
+def theme_import(request):
+    if request.method == 'POST':
+        try:
+            theme = import_theme(request.FILES['file'])
+            messages.info(request, _('File imported with success!'))
+            url_redirect = reverse('themes_theme', args=(theme.name,))
+        except ValueError, e:
+            messages.info(request, e)
+            url_redirect = reverse('themes_home')
+    return HttpResponseRedirect(url_redirect)
 

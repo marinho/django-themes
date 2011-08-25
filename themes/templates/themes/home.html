@@ -4,29 +4,44 @@
 
 {% block title %}Home{% endblock %}
 
-{% block extra_head %}{% endblock %}
+{% block extra_head %}{{ block.super }}
+<style>
+    #forms {display: table; overflow:hidden; width:700px; border-spacing:5px;}
+    #forms form {display: table-cell; overflow:hidden; width:50%; border:1px solid silver; padding:10px; background:#f7f7f7;}
+    #forms form h3 {margin:0; font-size:1em;}
+</style>
+{% endblock extra_head %}
 
 {% block content %}
 <h1>Themes</h1>
 
 <div id="middle">
-    <div id="sidebar">
+    <div id="forms">
         <form method="post">
+            <h3>{% trans "New theme" %}:</h3>
             {% csrf_token %}
             <input type="text" name="name"/>
-            <input type="submit" value="{% trans "Create a new Theme" %}"/>
+            <input type="submit" value="{% trans "Create" %}"/>
         </form>
 
-        <ul id="themes">
-            {% for theme in themes %}
-            <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a></li>
-            {% endfor %}
-        </ul>
+        <form method="post" enctype="multipart/form-data" action="{% url themes_import %}">
+            <h3>{% trans "Import theme" %}:</h3>
+            {% csrf_token %}
+            <input type="file" name="file"/>
+            <input type="submit" value="{% trans "Import" %}"/>
+        </form>
     </div>
 
-    <div id="container">
-    </div>
+    <ul id="themes">
+        {% for theme in themes %}
+        <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a></li>
+        {% endfor %}
+    </ul>
 </div>
+
+<footer>
+Powered by <a href="http://ace.ajax.org/">Ace - Ajax.org Cloud9 Editor</a>
+</footer>
 {% endblock content %}
 
 {% block body_scripts %}{% endblock %}
