@@ -65,11 +65,11 @@ class Loader(BaseLoader):
             engine, content = content.split(';', 1)
             engine = engine.split(':')[1]
 
-        origin = None #make_origin(full_name, self, full_name, template_dirs)
+        origin = None
 
         try:
             template_class = get_engine_class(engine or app_settings.DEFAULT_ENGINE)
-            template = template_class(content, origin, full_name) #template_name)
+            template = template_class(content, origin, full_name)
 
             return template, None
         except TemplateDoesNotExist:

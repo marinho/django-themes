@@ -34,6 +34,9 @@ them especifically.
     >>> print render_to_string('home')
     The most basic one.
 
+    >>> registration.register_template('box-to-include')
+    >>> tpl2 = theme1.templates.create(name='box-to-include', content='Included')
+
 Available loads
 
     >>> from themes.exceptions import UnavailableLoad
@@ -111,8 +114,56 @@ Available filters
     Look:yeah
 
 Available includes
+
+    >>> from themes.exceptions import UnavailableInclude
+
+    >>> app_settings.AVAILABLE_TAGS = '*'
+    >>> app_settings.AVAILABLE_INCLUDES = ['box-to-include']
+
+    >>> tpl1.content = 'Before {% include "box-to-include" %} After'
+    >>> tpl1.save()
+    >>> print render_to_string('home')
+    Before Included After
+
+    >>> app_settings.AVAILABLE_INCLUDES = ['another']
+    >>> tpl1.content = 'Before {% include "box-to-include" %} After'
+    >>> tpl1.save()
+    >>> try:
+    ...     render_to_string('home')
+    ... except UnavailableInclude, e:
+    ...     print e
+    The include of template "box-to-include" is not available.
+
 Excluded variables
+
+    >>> app_settings.EXCLUDED_VARIABLES = None
+
+    >>> tpl1.content = 'Username: {{ user.username }}.'
+    >>> tpl1.save()
+    >>> print render_to_string('home', {'user': {'username':'Ryan'}})
+    Username: Ryan.
+
+    >>> app_settings.EXCLUDED_VARIABLES = ['user']
+
+    >>> tpl1.content = 'Username: {{ user.username }}.'
+    >>> tpl1.save()
+    >>> print render_to_string('home', {'user': {'username':'Ryan'}})
+    Username: .
+
 Allowing not registered templates
+
+    >>> from django.template.base import TemplateDoesNotExist
+    >>> app_settings.ALLOW_NOT_REGISTERED = False
+    >>> try:
+    ...     render_to_string('new')
+    ... except TemplateDoesNotExist, e:
+    ...     print e
+    new
+
+    >>> app_settings.ALLOW_NOT_REGISTERED = True
+    >>> tpl3 = theme1.templates.create(name='new', content='New template.')
+    >>> print render_to_string('new')
+    New template.
 
 Registered templates
 --------------------
@@ -149,9 +200,23 @@ Setting a default theme
 Not existing returns empty
 --------------------------
 
-The setting 'THEMES_NOT_FOUND_RETURNS_EMPTY' (default False) can be set to return empty instead
-of raising error if that item doesn't exist.
+The setting 'THEMES_STATIC_NOT_FOUND_RETURNS_EMPTY' (default False) can be set to return empty
+instead of raising error if that item doesn't exist.
 
-Templates
 Static files
+
+    >>> from django.template import TemplateSyntaxError
+    >>> app_settings.STATIC_NOT_FOUND_RETURNS_EMPTY = False
+    >>> tpl1.content = '{% load themes_tags %}{% theme_static_file "test.png" %}'
+    >>> tpl1.save()
+    >>> try:
+    ...     render_to_string('home')
+    ... except TemplateSyntaxError, e:
+    ...     print e
+    Caught DoesNotExist while rendering: ThemeStaticFile matching query does not exist.
+
+    >>> app_settings.STATIC_NOT_FOUND_RETURNS_EMPTY = True
+    >>> tpl1.content = '{% load themes_tags %}{% theme_static_file "test.png" %}'
+    >>> tpl1.save()
+    >>> assert_equal(render_to_string('home'), '')
 

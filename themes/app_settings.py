@@ -16,7 +16,7 @@ AVAILABLE_INCLUDES = getattr(settings, 'THEMES_AVAILABLE_INCLUDES', '*') # or a 
 EXCLUDED_VARIABLES = getattr(settings, 'THEMES_EXCLUDED_VARIABLES', None) # or a tuple
 
 # If True, returns '' instead of TemplateDoesNotExist
-NOT_FOUND_RETURNS_EMPTY = getattr(settings, 'THEMES_NOT_FOUND_RETURNS_EMPTY', False)
+STATIC_NOT_FOUND_RETURNS_EMPTY = getattr(settings, 'THEMES_STATIC_NOT_FOUND_RETURNS_EMPTY', False)
 
 # A string with the path of a function to receive the request as argument and return the current
 # Theme. This is important to choose which Theme must be used in the request (for instance, the

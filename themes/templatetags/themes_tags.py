@@ -5,7 +5,7 @@ from themes import app_settings
 
 register = template.Library()
 
-class ThemeStaticFile(template.Node):
+class ThemeStaticFileNode(template.Node):
     name = None
 
     def __init__(self, name):
@@ -25,7 +25,7 @@ class ThemeStaticFile(template.Node):
         try:
             static_file = theme.static_files.get(name=name)
         except ThemeStaticFile.DoesNotExist:
-            if app_settings.NOT_FOUND_RETURNS_EMPTY:
+            if app_settings.STATIC_NOT_FOUND_RETURNS_EMPTY:
                 return ''
             else:
                 raise
@@ -40,6 +40,6 @@ def do_theme_static_file(parser, token):
     {% theme_static_file "theme-name:logo.gif" %}
     """
     bits = token.split_contents()
-    return ThemeStaticFile(bits[1])
+    return ThemeStaticFileNode(bits[1])
 register.tag('theme_static_file', do_theme_static_file)
 

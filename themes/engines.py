@@ -5,13 +5,14 @@ from django.template.context import RequestContext
 
 import app_settings
 from registration import get_registered_template
-from exceptions import UnavailableLoad, UnavailableTag, UnavailableFilter
+from exceptions import UnavailableLoad, UnavailableTag, UnavailableFilter, UnavailableInclude
 
 EXP_TAGS = re.compile('({%[ ]*(extends|include|theme_static_file)[ ]+"(.+?)"[ ]*%})')
 EXP_THEME_TAG = re.compile('{%[ ]*load[ ]+theme_static_file[ ]+.+?%}') # FIXME: This is not perfect (the optional space before the %})
 EXP_AV_LOAD = re.compile('{%[ ]*load[ ]+([\w_ -]+)[ ]*%}')
 EXP_AV_TAG = re.compile('{%[ ]*([\w_]+)? ')
 EXP_AV_FILTER = re.compile('{{[^}|]+\|([^ %}]+)')
+EXP_AV_INCLUDE = re.compile('{%[ ]*include[ ]+"(.+?)"[ ]*%}')
 ALL = '*'
 DEFAULT_TAGS_NODES = {
         'for': ['endfor','empty'],
@@ -101,6 +102,19 @@ class DjangoTemplate(Template):
                 diff = set(filter(bool, filters)).difference(set(filter(bool, available_filters)))
                 if diff:
                     raise UnavailableFilter('The template filters "%s" are not available.'%'", "'.join(diff))
+
+        # Blocks unavailable includes
+        available_includes = (self.registered_template.get('available_includes', None) or
+                app_settings.AVAILABLE_INCLUDES or [])
+        if available_includes != ALL:
+            available_includes = list(available_includes)
+
+            found = EXP_AV_INCLUDE.findall(template_string)
+            if found:
+                found = [i.split(':')[-1] for i in found]
+                diff = set(filter(bool, found)).difference(set(filter(bool, available_includes)))
+                if diff:
+                    raise UnavailableInclude('The include of template "%s" is not available.'%'", "'.join(diff))
 
     def render(self, context):
         """
