@@ -21,7 +21,8 @@ STATIC_NOT_FOUND_RETURNS_EMPTY = getattr(settings, 'THEMES_STATIC_NOT_FOUND_RETU
 # A string with the path of a function to receive the request as argument and return the current
 # Theme. This is important to choose which Theme must be used in the request (for instance, the
 # developer can use the URL pattern, the host name, or any other criteria for that.
-CHOOSING_FUNCTION = getattr(settings, 'THEMES_CHOOSING_FUNCTION', None)
+CHOOSING_FUNCTION = getattr(settings, 'THEMES_CHOOSING_FUNCTION', 'themes.views.choose_theme')
+CURRENT_THEME_COOKIE = getattr(settings, 'THEMES_CURRENT_THEME_COOKIE', '_current_theme')
 
 CACHE_EXPIRATION = getattr(settings, 'THEMES_CACHE_EXPIRATION', 1) #60 * 60 * 24)
 

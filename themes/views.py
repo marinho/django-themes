@@ -16,10 +16,12 @@ from django.contrib.auth.decorators import permission_required
 
 from models import Theme, ThemeTemplate, ThemeStaticFile
 from packaging import export_theme, import_theme
+import app_settings
 
 @permission_required('themes.change_theme')
 def home(request):
     themes = Theme.objects.order_by('verbose_name')
+    previewing = request.COOKIES.get(app_settings.CURRENT_THEME_COOKIE, None)
 
     if request.POST.get('name', None):
         verbose_name = request.POST['name']
@@ -35,7 +37,7 @@ def home(request):
 
     return render_to_response(
             'themes/home.html',
-            {'themes': themes},
+            {'themes':themes, 'previewing':previewing},
             context_instance=RequestContext(request),
             )
 
@@ -73,6 +75,18 @@ def theme_set_default(request, name):
     theme.save()
     messages.info(request, _('Theme "%s" set as default.')%name)
     return HttpResponseRedirect(reverse('themes_theme', args=(name,)))
+
+@permission_required('themes.set_default_theme')
+def theme_preview(request, name=None):
+    if name:
+        resp = HttpResponseRedirect('/')
+        resp.set_cookie(app_settings.CURRENT_THEME_COOKIE, name)
+        messages.info(request, _('Theme "%s" set to preview.')%name)
+    else:
+        resp = HttpResponseRedirect(reverse('themes_home'))
+        resp.delete_cookie(app_settings.CURRENT_THEME_COOKIE)
+        messages.info(request, _('Disabled the theme preview.'))
+    return resp
 
 @csrf_exempt
 @permission_required('themes.change_theme')
@@ -234,4 +248,18 @@ def theme_import(request):
             messages.info(request, e)
             url_redirect = reverse('themes_home')
     return HttpResponseRedirect(url_redirect)
+
+def choose_theme(request):
+    # Check first about a cookie with current theme
+    if request.COOKIES.get(app_settings.CURRENT_THEME_COOKIE, None):
+        try:
+            return Theme.objects.get(name=request.COOKIES[app_settings.CURRENT_THEME_COOKIE])
+        except Theme.DoesNotExist:
+            pass
+
+    # Returns the default theme
+    try:
+        return Theme.objects.get(is_default=True)
+    except Theme.DoesNotExist:
+        return None
 

@@ -37,6 +37,7 @@
             <li><a href="javascript:void(0)" id="delete-theme">Delete</a></li>
             <li>{% if theme.is_default %}{% trans "Is Default" %}
                 {% else %}<a href="{% url themes_set_default theme.name %}">Set Default</a>{% endif %}</li>
+                <li><a href="{% url themes_preview theme.name %}" target="__blank">{% trans "Preview" %}</a></li>
                 <li><a href="{% url themes_download theme.name %}">{% trans "Download" %}</a></li>
         </ul>
 

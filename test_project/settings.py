@@ -151,7 +151,7 @@ LOGGING = {
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--with-coverage', '--with-doctest', '--doctest-tests', '--doctest-extension=txt']
 
-THEMES_CHOOSING_FUNCTION = 'views.choose_theme'
+THEMES_CHOOSING_FUNCTION = 'themes.views.choose_theme'
 #THEMES_EXCLUDED_VARIABLES = ('perms',)
 
 try:

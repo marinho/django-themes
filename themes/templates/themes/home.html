@@ -37,6 +37,12 @@
         <li><a href="{% url themes_theme theme.name %}">{{ theme }}</a> {% if theme.is_default%}- default{% endif %}</li>
         {% endfor %}
     </ul>
+
+    {% if previewing %}
+    <p>
+    {% trans "Previewing" %} - <a href="{% url themes_disable_preview %}">{% trans "Disable previewing mode." %}</a>
+    </p>
+    {% endif %}
 </div>
 
 <footer>
