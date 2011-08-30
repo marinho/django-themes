@@ -68,6 +68,28 @@ def theme_delete(request, name):
     messages.info(request, _('Theme "%s" deleted.')%name)
     return HttpResponseRedirect(reverse('themes_home'))
 
+@csrf_exempt
+@permission_required('themes.change_theme')
+def theme_rename(request, name):
+    theme = get_object_or_404(Theme, name=name)
+
+    if request.method == 'POST':
+        theme.verbose_name = request.POST['name']
+
+        name = slugify(theme.verbose_name)
+        counter = 0
+        while Theme.objects.filter(name=name).exclude(pk=theme.pk).count():
+            counter += 1
+            name = '%s-%s'%(slugify(theme.verbose_name), counter)
+        theme.name = name
+        theme.save()
+
+        ret = {'new_url': reverse('themes_theme', args=(theme.name,))}
+    else:
+        ret = {'result': 'error'}
+    
+    return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
+
 @permission_required('themes.set_default_theme')
 def theme_set_default(request, name):
     theme = get_object_or_404(Theme, name=name)
@@ -159,7 +181,7 @@ def theme_edit_child(request, name):
                 url = item.url
 
             ret = {'type':item.get_type(), 'url':url, 'mime_type':item.mime_type}
-            return HttpResponse(simplejson.dumps(ret)) #, mime_type='text/javascript')
+            return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
 
 @csrf_exempt
 @permission_required('themes.change_theme')

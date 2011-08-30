@@ -8,6 +8,7 @@
 <style>
     body {font-family:arial,helvetica; margin:0;}
     h1 {font-size:1.2em; padding:5px; background:#def; margin:0; height:25px;}
+    h1:hover {background:#ffc; padding:4px; border:1px solid #cc9;}
     h2 {font-size:1.1em; padding:5px; background:#ddf7ff; margin:0;}
     h1 a {font-size:0.8em; float:right; font-weight:normal; margin-left:10px;}
     iframe#up-file { height:30px; margin:0; padding:0; border:0; }
@@ -31,7 +32,7 @@
 {% block content %}
 <div id="middle">
     <div id="sidebar">
-        <h1>Theme: {{ theme }}</h1>
+        <h1 title="{% trans "Click to rename" %}">Theme: {{ theme }}</h1>
         <ul id="menu-theme">
             <li><a href="{% url themes_home %}">All</a></li>
             <li><a href="javascript:void(0)" id="delete-theme">Delete</a></li>
@@ -256,6 +257,15 @@
         $('#delete-theme').click(function(){
             if (!confirm('{% trans "Are you sure?" %}')) return
             window.location = '{% url themes_delete theme.name %}';
+        });
+
+        $('h1').click(function(){
+            var h1 = $(this);
+            var new_name = prompt('Set the new name', h1.text().split(': ')[1]);
+            $.post('{% url themes_rename theme.name %}', {'name':new_name}, function(resp){
+                if (typeof resp == 'string') resp = JSON.parse(resp);
+                window.location = resp.new_url;
+            });
         });
     });
 </script>

@@ -12,7 +12,9 @@ based on criteria he/she needs.
     >>> cl = Client()
 
     >>> from themes import app_settings
-    >>> assert_equal(app_settings.CHOOSING_FUNCTION, 'views.choose_theme')
+    >>> assert_equal(app_settings.CHOOSING_FUNCTION, 'themes.views.choose_theme')
+
+    >>> app_settings.CHOOSING_FUNCTION = 'views.choose_theme'
 
     >>> from themes.models import ThemeTemplate, Theme
 
