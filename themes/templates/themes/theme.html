@@ -40,6 +40,7 @@
                 {% else %}<a href="{% url themes_set_default theme.name %}">Set Default</a>{% endif %}</li>
                 <li><a href="{% url themes_preview theme.name %}" target="__blank">{% trans "Preview" %}</a></li>
                 <li><a href="{% url themes_download theme.name %}">{% trans "Download" %}</a></li>
+                <li><a href="javascript:void(0)" id="save-as">{% trans "Save as" %}</a></li>
         </ul>
 
         <h2>{% trans "Templates" %}<a href="javascript:void(0)" id="new-template">{% trans "New" %}</a></h2>
@@ -207,6 +208,8 @@
 
         $('#new-template').click(function(){
             var name = prompt('Please inform the template name to create.');
+            if (!name) return
+
             var url = '{% url themes_create_template theme.name %}';
             var params = {'name': name};
 
@@ -223,6 +226,8 @@
 
         $('#new-static-file').click(function(){
             var name = prompt('Please inform the static file name to create.');
+            if (!name) return
+
             var url = '{% url themes_create_static_file theme.name %}';
             var params = {'name': name};
 
@@ -239,7 +244,10 @@
 
         $('#new-static-url').click(function(){
             var new_url = prompt('Please inform the URL');
+            if (!new_url) return
             var name = prompt('Now inform the NAME');
+            if (!name) return
+
             var url = '{% url themes_create_static_file theme.name %}';
             var params = {'name': name, 'url': new_url};
 
@@ -257,6 +265,14 @@
         $('#delete-theme').click(function(){
             if (!confirm('{% trans "Are you sure?" %}')) return
             window.location = '{% url themes_delete theme.name %}';
+        });
+
+        $('#save-as').click(function(){
+            var new_name = prompt('Set the new name');
+            $.post('{% url themes_save_as theme.name %}', {'name':new_name}, function(resp){
+                if (typeof resp == 'string') resp = JSON.parse(resp);
+                window.location = resp.new_url;
+            });
         });
 
         $('h1').click(function(){

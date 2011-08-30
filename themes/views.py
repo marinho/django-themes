@@ -74,17 +74,75 @@ def theme_rename(request, name):
     theme = get_object_or_404(Theme, name=name)
 
     if request.method == 'POST':
+        # Sets a new verbose name and its slugified name
         theme.verbose_name = request.POST['name']
-
-        name = slugify(theme.verbose_name)
+        new_name = slugify(theme.verbose_name)
         counter = 0
-        while Theme.objects.filter(name=name).exclude(pk=theme.pk).count():
+        while Theme.objects.filter(name=new_name).exclude(pk=theme.pk).count():
             counter += 1
-            name = '%s-%s'%(slugify(theme.verbose_name), counter)
-        theme.name = name
+            new_name = '%s-%s'%(slugify(theme.verbose_name), counter)
+        theme.name = new_name
         theme.save()
 
         ret = {'new_url': reverse('themes_theme', args=(theme.name,))}
+    else:
+        ret = {'result': 'error'}
+    
+    # Returns a JSON with new URL to redirect it
+    return HttpResponse(simplejson.dumps(ret), mimetype='text/javascript')
+
+@csrf_exempt
+@permission_required('themes.add_theme')
+def theme_save_as(request, name):
+    theme = get_object_or_404(Theme, name=name)
+
+    if request.method == 'POST':
+        # Theme
+        new_theme = Theme()
+        new_theme.verbose_name = request.POST['name']
+        new_name = slugify(new_theme.verbose_name)
+        counter = 0
+        while Theme.objects.filter(name=new_name).exclude(pk=theme.pk).count():
+            counter += 1
+            new_name = '%s-%s'%(slugify(theme.verbose_name), counter)
+        new_theme.name = new_name
+        new_theme.save()
+
+        # Templates
+        for tpl in theme.templates.all():
+            new_tpl, new = new_theme.templates.get_or_create(name=tpl.name)
+            new_tpl.notes = tpl.notes
+            new_tpl.content = tpl.content
+            new_tpl.engine = tpl.engine
+            new_tpl.save()
+
+        # Static files
+        for sf in theme.static_files.all():
+            try:
+                new_sf, new = new_theme.static_files.get_or_create(name=sf.name)
+                new_sf.url = sf.url
+                new_sf.mime_type = sf.mime_type
+                new_sf.save()
+
+                if sf.file:
+                    # Finds a name for the new file
+                    root = sf.file.path.replace(sf.file.name, '')
+                    name, ext = os.path.splitext(sf.file.name)
+                    while os.path.exists(root + name + ext):
+                        name += '_'
+
+                    # Reads the old file to make a ContentFile instance
+                    fp = file(sf.file.path)
+                    content = ContentFile(fp.read())
+                    fp.close()
+                    
+                    # Saves the new file for the new static file object
+                    new_sf.file.save(name+ext, content)
+            except Exception, e:
+                print (sf, e.__class__, e)
+                raise
+
+        ret = {'new_url': reverse('themes_theme', args=(new_theme.name,))}
     else:
         ret = {'result': 'error'}
     
@@ -235,10 +293,12 @@ def theme_create_static_file(request, name):
                 sf.mime_type = mimetypes.guess_type(sf.url)[0] or ''
                 sf.save()
             else:
+                # Saves an empty file as a starting point
                 file_name = '%s-%s-%s'%(theme.pk, sf.pk, name)
                 content = ContentFile('')
                 sf.file.save(file_name, content)
 
+                # Detects the mimetype for the given name
                 sf.mime_type = mimetypes.guess_type(file_name)[0] or ''
                 sf.save()
             ret = {'result':'ok', 'info':{'pk':sf.pk, 'url':sf.get_url()}}
@@ -249,11 +309,13 @@ def theme_create_static_file(request, name):
 def theme_download(request, name):
     theme = get_object_or_404(Theme, name=name)
 
+    # Uses zipfile library to export the theme files as just one file
     zipf_path = export_theme(theme)
     fp = file(zipf_path)
     content = fp.read()
     fp.close()
 
+    # Forces the download
     resp = HttpResponse(content, mimetype='application/zip')
     resp['Content-Disposition'] = 'attachment; filename=theme-%s.zip'%name
 
@@ -272,6 +334,11 @@ def theme_import(request):
     return HttpResponseRedirect(url_redirect)
 
 def choose_theme(request):
+    """
+    Function used by setting THEMES_THEME_CHOOSING to get the current theme by the middleware.
+    This function is simple but supports returning the default theme or the one set by a cookie,
+    used by "Preview" function. But a similar function can be made to do more than that.
+    """
     # Check first about a cookie with current theme
     if request.COOKIES.get(app_settings.CURRENT_THEME_COOKIE, None):
         try:

@@ -9,6 +9,7 @@ from exceptions import UnavailableLoad, UnavailableTag, UnavailableFilter, Unava
 
 EXP_TAGS = re.compile('({%[ ]*(extends|include|theme_static_file)[ ]+"(.+?)"[ ]*%})')
 EXP_THEME_TAG = re.compile('{%[ ]*load[ ]+theme_static_file[ ]+.+?%}') # FIXME: This is not perfect (the optional space before the %})
+EXP_EXTENDS = re.compile('({%[ ]*extends[ ]+.*?%})')
 EXP_AV_LOAD = re.compile('{%[ ]*load[ ]+([\w_ -]+)[ ]*%}')
 EXP_AV_TAG = re.compile('{%[ ]*([\w_]+)? ')
 EXP_AV_FILTER = re.compile('{{[^}|]+\|([^ %}]+)')
@@ -52,7 +53,10 @@ class DjangoTemplate(Template):
 
         # Forces {% load themes_tag %} if any of its tags are used but there is not loading
         if force_themes_tags and not EXP_THEME_TAG.findall(template_string):
-            template_string = '{% load themes_tags %}' + template_string
+            # The following 2 lines ensures the {% load %} comes after an {% extends %} tag
+            f = EXP_EXTENDS.findall(template_string)
+            pos = (template_string.index(f[0]) + len(f[0])) if f else 0
+            template_string = template_string[:pos] + '{% load themes_tags %}' + template_string[pos:]
 
         self.check_allowed_template(template_string)
 
