@@ -17,7 +17,7 @@ The internal variable to store registered templates is this:
 
 But this is not useful for the developer. He/she must know the function to register them:
 
-    >>> from themes import register_template
+    >>> from themes.registration import register_template
 
 When your project or application registers a template, it just means it needs that
 template for something, and it sets everything that template "offers" for theme templates
